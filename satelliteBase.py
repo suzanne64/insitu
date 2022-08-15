@@ -27,7 +27,7 @@ from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 import ProcessFields as pfields
 # import IABPplots as iplots
 
-def BeaufortSatelliteMap(args,surface='SST',zoom=False): #strdate=None,surface='SST',extent=[-180,180,50,90],src='JPL-L3'): #nors='n'):
+def BeaufortSatelliteMap(args,today,surface='SST',zoom=False): #strdate=None,surface='SST',extent=[-180,180,50,90],src='JPL-L3'): #nors='n'):
 
     if args.strdate == None:
         objdate = dt.datetime.now() - dt.timedelta(days=1)
@@ -35,14 +35,13 @@ def BeaufortSatelliteMap(args,surface='SST',zoom=False): #strdate=None,surface='
     else:
         objdate = dt.datetime.strptime(args.strdate,'%Y%m%d')
     extent=[int(item.strip()) for item in args.mapDomain.split(',')]
-    shipLoc = [np.float(item.strip()) for item in args.shipLocation.split(',')]
 
     if zoom:
-        extent[0] = shipLoc[0] - np.float(args.smallDomain)/111000 / np.cos(np.radians(shipLoc[1]))
-        extent[1] = shipLoc[0] + np.float(args.smallDomain)/111000 / np.cos(np.radians(shipLoc[1]))
-        extent[2] = shipLoc[1] - np.float(args.smallDomain)/111000
-        extent[3] = shipLoc[1] + np.float(args.smallDomain)/111000
-    
+        extent[0] = args.shipLon - np.float(args.smallDomain)/111000 / np.cos(np.radians(args.shipLat))
+        extent[1] = args.shipLon + np.float(args.smallDomain)/111000 / np.cos(np.radians(args.shipLat))
+        extent[2] = args.shipLat - np.float(args.smallDomain)/111000
+        extent[3] = args.shipLat + np.float(args.smallDomain)/111000
+
     # cmap = plt.get_cmap('turbo')
     cmap = plt.cm.turbo
     normsst = colors.BoundaryNorm(np.arange(-2,6,0.5),cmap.N)
@@ -57,26 +56,30 @@ def BeaufortSatelliteMap(args,surface='SST',zoom=False): #strdate=None,surface='
     # sssbounds.insert(0,0)
     # ssscmap = mpl.colors.ListedColormap(ssscolors[1:])
 
-    icecolors=['0.4','0.5','0.6','0.725','0.85','1.0']
+    icecolors=['dimgray','gray','darkgray','lightgray','aliceblue','powderblue']
+#    icecolors=['dimgray','yellow','darkgray','red','whitesmoke','powderblue']
+    # icecolors=['0.4','0.5','0.6','0.725','0.85','1.0']
     icelevels=[0.2,0.3,0.4,0.5,0.75]
-    
+
+    # set up figure
     fig1, ax1 = plt.subplots(1,1, figsize=(10,10))
     if not zoom:
         ax1 = plt.subplot(1,1,1,projection=ccrs.NorthPolarStereo(central_longitude=-140))
     else:
-        ax1 = plt.subplot(1,1,1,projection=ccrs.NorthPolarStereo(central_longitude=shipLoc[0]))
-       
-    ax1.set_position([0.1,0.22,0.55,0.7])  # position on page
+        ax1 = plt.subplot(1,1,1,projection=ccrs.NorthPolarStereo(central_longitude=args.shipLon))
 
-    gl = ax1.gridlines(draw_labels=True, dms=True, 
-                       x_inline=False, y_inline=False) #, alpha=0.3) crs=ccrs.PlateCarree(), 
-    
+    ax1.set_position([0.1,0.22,0.55,0.7])  # position on page
+# ax11.set_position([0.1,0.22,0.55,0.7])  # position on page
+
+    gl = ax1.gridlines(draw_labels=True, dms=True,x_inline=False, y_inline=False) #, alpha=0.3) crs=ccrs.PlateCarree(),
+# gl11 = ax11.gridlines(draw_labels=True, dms=True,x_inline=False, y_inline=False) #, alpha=0.3) crs=ccrs.PlateCarree(),
+
     gl.xlocator = mticker.FixedLocator(np.arange(-180,180,20))
     gl.xformatter = LONGITUDE_FORMATTER
-    
+
     gl.ylocator = mticker.FixedLocator(np.arange(68,82,2))
     gl.yformatter = LATITUDE_FORMATTER
-    
+
     ax1.add_feature(cfeature.LAND,facecolor='gray')
     ax1.coastlines(resolution='10m',linewidth=0.5,color='lightgray')
     ax1.set_extent(extent,crs=ccrs.PlateCarree())
@@ -84,21 +87,33 @@ def BeaufortSatelliteMap(args,surface='SST',zoom=False): #strdate=None,surface='
     bbox_ax1 = ax1.get_position()
 
     # get satellite ice concentration data
-    # if objdate < dt.datetime.today() - dt.timedelta(days=30):
-    #     print('cannot use nrt nsidc-0081')
-    #     exit(-1)
-    icedate, ice, icexx, iceyy = pfields.getICE(args,nors='n') 
+    icedate, ice, icexx, iceyy = pfields.getICE(args,nors='n')
     if ice is not None:
         print('Date of ice map',icedate,ice.shape)
+        print()
+    # ICE filled contour
+    # if ice is not None:
+    #     kw = dict(central_latitude=90, central_longitude=-45, true_scale_latitude=70)
+    #     cbice = ax1.contourf(icexx,iceyy,ice, colors=icecolors, levels=icelevels, vmin=0, vmax=1,
+    #                          extend='both', transform=ccrs.Stereographic(**kw))   #use either colors or cmap
+    #     # colorbar for ICE
+    #     cb_ice_ax = fig1.add_axes([bbox_ax1.x0, bbox_ax1.y0*.33, bbox_ax1.x1-bbox_ax1.x0, 0.02])
+    #     # cb_ice_ax = fig1.add_axes([bbox_ax1.x1+0.14, bbox_ax1.y0, 0.02, bbox_ax1.y1-bbox_ax1.y0])
+    #     cbi = plt.colorbar(cbice, cax=cb_ice_ax, orientation='horizontal')
+    #     cbi.set_label(label=f'NSIDC Ice Concentration on {icedate}',fontsize=9)
+    #     cbi.ax.tick_params(labelsize=9)
+    # else:
+    #     ax1.text(-160,69,'ICE data unavailable',color='k',fontsize=10,transform=ccrs.PlateCarree())
+
     # get satellite sst data
     if surface == 'SST':# and not zoom:
-        sstdate, sst, sstlon, sstlat = pfields.getSST(args.strdate)
+        sstdate, sst, sstlon, sstlat = pfields.getSST(args)
         if sst is not None:
-            print('Date of sst map',sstdate,sst.shape)    
+            print('Date of sst map',sstdate,sst.shape)
             # SST filled contours
-            # cbsst = ax1.contourf(sstlon, sstlat, sst, transform=ccrs.PlateCarree(),levels=sstbounds, 
+            # cbsst = ax1.contourf(sstlon, sstlat, sst, transform=ccrs.PlateCarree(),levels=sstbounds,
             #                       colors=sstcolors, extend='both')
-            cbsst = ax1.pcolormesh(sstlon, sstlat, sst, vmin=-2.0, vmax=5.0, transform=ccrs.PlateCarree(), 
+            cbsst = ax1.pcolormesh(sstlon, sstlat, sst, vmin=-2.0, vmax=5.0, transform=ccrs.PlateCarree(),
                                    cmap=cmap, norm=normsst)
             ax1.gridlines(crs=ccrs.PlateCarree(),xlocs=np.arange(-180,180,45),ylocs=np.arange(70,80,2), color='gray',x_inline=False)
         else:
@@ -110,22 +125,14 @@ def BeaufortSatelliteMap(args,surface='SST',zoom=False): #strdate=None,surface='
         cbs.ax.tick_params(labelsize=9)
 
     if surface == 'SSS':# and not zoom:
-        sssdate, ds = pfields.getSSS(args) 
+        sssdate, ds = pfields.getSSS(args)
         if ds is not None:
-            if 'L3' in args.satelliteSSS:
-                # numssscolors = 40
-                # cNorm = colors.Normalize(vmin=22,vmax=30)
-                # scalarMap = cm.ScalarMappable(norm=cNorm,cmap=cmap)
-                what = ds.smap_sss
-                what.where(what>=22)
-                cbsss = ax1.pcolormesh(ds.longitude, ds.latitude, ds.smap_sss.where((ds.smap_sss>=22) & (ds.smap_sss<=30)), vmin=22, vmax=30, 
-                                        transform=ccrs.PlateCarree(),cmap=cmap, norm=normsss)
-                ax1.gridlines(crs=ccrs.PlateCarree(),xlocs=np.arange(-180,180,45),ylocs=np.arange(70,80,2), color='gray',x_inline=False)
-            elif 'L2B' in args.satelliteSSS:
-                print('you are in L2B')
-                cbsss = ax1.scatter(ds['longitude'], ds['latitude'], 15, ds['smap_sss'], vmin=22, vmax=30, 
-                                    cmap=cmap, norm=normsss, transform=ccrs.PlateCarree())
-                ax1.gridlines(crs=ccrs.PlateCarree(),xlocs=np.arange(-180,180,45),ylocs=np.arange(70,80,2), color='gray',x_inline=False)
+            print('Date of sss map',sssdate)
+            cbsss = ax1.scatter(ds['longitude'], ds['latitude'], 15, ds['smap_sss'],
+                                cmap=cmap, norm=normsss, transform=ccrs.PlateCarree())
+            if len(ds['smap_sss']) == 0:
+                ax1.text(-158,68.8,'No SSS data in last two days',transform=ccrs.PlateCarree(),fontsize=14)
+            ax1.gridlines(crs=ccrs.PlateCarree(),xlocs=np.arange(-180,180,45),ylocs=np.arange(70,80,2), color='gray',x_inline=False)
         # colorbar for SSS
         cb_sss_ax = fig1.add_axes([bbox_ax1.x0, bbox_ax1.y0*.67, bbox_ax1.x1-bbox_ax1.x0, 0.02]) # left, bot, width, height
         cbs = plt.colorbar(cbsss, cax=cb_sss_ax, orientation='horizontal')
@@ -135,7 +142,7 @@ def BeaufortSatelliteMap(args,surface='SST',zoom=False): #strdate=None,surface='
     # ICE filled contour
     if ice is not None:
         kw = dict(central_latitude=90, central_longitude=-45, true_scale_latitude=70)
-        cbice = ax1.contourf(icexx,iceyy,ice, colors=icecolors, levels=icelevels, vmin=0, vmax=0.9, 
+        cbice = ax1.contourf(icexx,iceyy,ice, colors=icecolors, levels=icelevels, vmin=0, vmax=1,
                              extend='both', transform=ccrs.Stereographic(**kw))   #use either colors or cmap
         # colorbar for ICE
         cb_ice_ax = fig1.add_axes([bbox_ax1.x0, bbox_ax1.y0*.33, bbox_ax1.x1-bbox_ax1.x0, 0.02])
@@ -145,35 +152,40 @@ def BeaufortSatelliteMap(args,surface='SST',zoom=False): #strdate=None,surface='
         cbi.ax.tick_params(labelsize=9)
     else:
         ax1.text(-160,69,'ICE data unavailable',color='k',fontsize=10,transform=ccrs.PlateCarree())
-    
-    ax1.plot(shipLoc[0],shipLoc[1],'r*',markersize=10, transform=ccrs.PlateCarree())
+
+    ax1.plot(args.shipLon,args.shipLat,'r*',markersize=10, transform=ccrs.PlateCarree())
     # if zoom:
     #     ax1.set_aspect('auto')
-    
+
     if surface == 'SST':
         if not zoom:
-            ax1.set_title(f'SASSIE Temperature data {objdate.month}/{objdate.day}/{objdate.year}',fontsize=16)
-            figstr=f'{args.base_dir}/figs/sassie_Temp_{objdate.month}-{objdate.day}-{objdate.year}.png'
+            ax1.set_title(f'SASSIE Temperature data {sstdate.month}/{sstdate.day}/{sstdate.year}',fontsize=16)
+            # figstr=f'{args.base_dir}/figs/sassie_Temp_{sstdate.month:02d}-{sstdate.day:02d}-{sstdate.year}.png'
+            figstr=f'{args.base_dir}/figs/sassie_Temp_{today.year}{today.month:02}{today.day:02}T{today.hour:02}:{today.minute:02}:{today.second:02}.png'
         else:
-            ax1.set_title(f'SASSIE Temperature data {objdate.month}/{objdate.day}/{objdate.year} insitu',fontsize=16)
+            ax1.set_title(f'SASSIE Temperature data {sstdate.month}/{sstdate.day}/{sstdate.year} insitu',fontsize=16)
             gl = ax1.gridlines(draw_labels=True, dms=True, x_inline=False, y_inline=False)
             gl.xlocator = mticker.FixedLocator(np.arange(-180,180,1))
-            gl.xformatter = LONGITUDE_FORMATTER            
+            gl.xformatter = LONGITUDE_FORMATTER
             gl.ylocator = mticker.FixedLocator(np.arange(68,82,0.25))
             gl.yformatter = LATITUDE_FORMATTER
-            figstr=f'{args.base_dir}/figs/sassie_Temp_{objdate.month}-{objdate.day}-{objdate.year}Zoom.png'
+            figstr=f'{args.base_dir}/figs/sassie_Temp_{today.year}{today.month:02}{today.day:02}T{today.hour:02}:{today.minute:02}:{today.second:02}Zoom.png'
+            # figstr=f'../figs/sassie_Temp_{sstdate.month:02d}-{sstdate.day:02d}-{sstdate.year}Zoom.png'
     if surface == 'SSS':
+        print('              sssdate',sssdate)
         if not zoom:
-            ax1.set_title(f'SASSIE Salinity data {objdate.month}/{objdate.day}/{objdate.year}',fontsize=16)
-            figstr=f'{args.base_dir}/figs/sassie_Sali_{args.satelliteSSS}_{objdate.month}-{objdate.day}-{objdate.year}.png'
+            ax1.set_title(f'SASSIE Salinity data {sssdate.month}/{sssdate.day}/{sssdate.year}',fontsize=16)
+            figstr=f'{args.base_dir}/figs/sassie_Sali_{today.year}{today.month:02}{today.day:02}T{today.hour:02}:{today.minute:02}:{today.second:02}.png'
+            # figstr=f'../figs/sassie_Sali_{sssdate.month:02d}-{sssdate.day:02d}-{sssdate.year}.png'  # {args.satelliteSSS}_
         else:
-            ax1.set_title(f'SASSIE Salinity data {objdate.month}/{objdate.day}/{objdate.year} insitu',fontsize=16)
-            gl = ax1.gridlines(draw_labels=True, dms=True, x_inline=False, y_inline=False) #, alpha=0.3) crs=ccrs.PlateCarree(), 
+            ax1.set_title(f'SASSIE Salinity data {sssdate.month}/{sssdate.day}/{sssdate.year} insitu',fontsize=16)
+            gl = ax1.gridlines(draw_labels=True, dms=True, x_inline=False, y_inline=False) #, alpha=0.3) crs=ccrs.PlateCarree(),
             gl.xlocator = mticker.FixedLocator(np.arange(-180,180,1))
-            gl.xformatter = LONGITUDE_FORMATTER            
+            gl.xformatter = LONGITUDE_FORMATTER
             gl.ylocator = mticker.FixedLocator(np.arange(68,82,0.25))
             gl.yformatter = LATITUDE_FORMATTER
-            figstr=f'{args.base_dir}/figs/sassie_Sali_{args.satelliteSSS}_{objdate.month}-{objdate.day}-{objdate.year}Zoom.png'
+            figstr=f'{args.base_dir}/figs/sassie_Sali_{today.year}{today.month:02}{today.day:02}T{today.hour:02}:{today.minute:02}:{today.second:02}Zoom.png'
+            # figstr=f'../figs/sassie_Sali_{sssdate.month:02d}-{sssdate.day:02d}-{sssdate.year}Zoom.png'
     # establish labels dictionary
     newline = '\n'
 
@@ -188,7 +200,7 @@ def BeaufortSatelliteMap(args,surface='SST',zoom=False): #strdate=None,surface='
                # 8: {'name':'180E',      'lon': 188, 'lat':83, 'rot1':90,  'col':'dimgrey'},
                # 9: {'name':'135W',      'lon':-124, 'lat':82, 'rot1':-45, 'col':'dimgrey'},
                # 10:{'name':'90W',       'lon': -90, 'lat':82, 'rot1':0,   'col':'dimgrey'}
-              }    
+              }
     for i,o in enumerate(outlabs):
         if i <= 2: fs=14
         else: fs=11
@@ -203,7 +215,7 @@ def BeaufortSatelliteMap(args,surface='SST',zoom=False): #strdate=None,surface='
 #         strdate = "%d%.2d%.2d" % (objdate.year,objdate.month,objdate.day)
 #     else:
 #         objdate = dt.datetime.strptime(strdate,'%Y%m%d')
-    
+
 #     sssdate, ds = pfields.getSSS(strdate)  # already been trimmed lat/lon
 #     print(ds.smap_sss.shape)
 #     print(ds.longitude.shape)
@@ -215,10 +227,10 @@ def BeaufortSatelliteMap(args,surface='SST',zoom=False): #strdate=None,surface='
 # ax1 = fig.add_subplot(projection=map_proj)
 
 
-# sss_L3_img = ax1.pcolormesh(ds_smap_L3.longitude, ds_smap_L3.latitude, ds_smap_L3.smap_sss, 
+# sss_L3_img = ax1.pcolormesh(ds_smap_L3.longitude, ds_smap_L3.latitude, ds_smap_L3.smap_sss,
 #                         vmin=20, vmax=30,  # Set max and min values for plotting
 #                         cmap='viridis', shading='auto',   # shading='auto' to avoid warning
-#                         transform=ccrs.PlateCarree())  # coords are lat,lon but map if NPS 
+#                         transform=ccrs.PlateCarree())  # coords are lat,lon but map if NPS
 
 
 # #  ----- map stuff
@@ -236,9 +248,5 @@ def BeaufortSatelliteMap(args,surface='SST',zoom=False): #strdate=None,surface='
 # gl.xlocator = mticker.FixedLocator([-170, -160, -150, -140, -130])
 # gl.top_labels = False
 # gl.bottom_labels = True
-    
+
 #     pass
-
-
-
-

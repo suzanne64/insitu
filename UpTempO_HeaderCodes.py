@@ -21,27 +21,13 @@ def PG_HeaderCodes(header):
            'Temperature0cm':'Ts',
            'WindDirection':'WindDir',
            'WindSpeed':'WindSpeed',
-           '37IMPressure':'CTD-P',
-           '37IMSalinity':'CTD-S',
-           '37IMSST':'CTD-T',
-           '37IMPressure1':'CTD-P1',
-           '37IMSalinity1':'CTD-S1',
-           '37IMSST1':'CTD-T1',
-           '37IMPressure2':'CTD-P2',
-           '37IMSalinity2':'CTD-S2',
-           '37IMSST2':'CTD-T2',
-           '37IMPressure3':'CTD-P3',
-           '37IMSalinity3':'CTD-S3',
-           '37IMSST3':'CTD-T3',
-           '37IMPressure4':'CTD-P4',
-           '37IMSalinity4':'CTD-S4',
-           '37IMSST4':'CTD-T4',
-           '37IMPressure5':'CTD-P5',
-           '37IMSalinity5':'CTD-S5',
-           '37IMSST5':'CTD-T5',
-           '37IMPressure6':'CTD-P6',
-           '37IMSalinity6':'CTD-S6',
-           '37IMSST6':'CTD-T6',
+           '37IMPressure':'CTD-P',   '37IMSalinity':'CTD-S',   '37IMSST':'CTD-T',
+           '37IMPressure1':'CTD-P1', '37IMSalinity1':'CTD-S1', '37IMSST1':'CTD-T1',
+           '37IMPressure2':'CTD-P2', '37IMSalinity2':'CTD-S2', '37IMSST2':'CTD-T2',
+           '37IMPressure3':'CTD-P3', '37IMSalinity3':'CTD-S3', '37IMSST3':'CTD-T3',
+           '37IMPressure4':'CTD-P4', '37IMSalinity4':'CTD-S4', '37IMSST4':'CTD-T4',
+           '37IMPressure5':'CTD-P5', '37IMSalinity5':'CTD-S5', '37IMSST5':'CTD-T5',
+           '37IMPressure6':'CTD-P6', '37IMSalinity6':'CTD-S6', '37IMSST6':'CTD-T6',
            'DepthPod1':'D1','DepthPod10':'D10','DepthPod11':'D11','DepthPod12':'D12','DepthPod13':'D13','DepthPod14':'D14',
            'DepthPod15':'D15','DepthPod16':'D16','DepthPod17':'D17','DepthPod18':'D18','DepthPod19':'D19','DepthPod20':'D20',
            'DepthPod21':'D21','DepthPod22':'D22','DepthPod23':'D23','DepthPod24':'D24','DepthPod25':'D25','DepthPod2':'D2',
@@ -63,6 +49,8 @@ def PG_HeaderCodes(header):
            'GPSLongitude':'Lon',
            'SST':'Ts',
            'SurfaceSalinity':'SSSalt',
+           'CTSalinityHull': 'Shull',
+           'CTTemperatureHull': 'Thull',
            'BPress':'BP',
            'IridiumLatitude':'IrLat',
            'IridiumLongitude':'IrLon',
@@ -76,23 +64,20 @@ def PG_HeaderCodes(header):
            'PressPod3':'P3',
            'Salinity22cm':'S1',
            'Temperature22cm':'T1',
-           
+
            'SalinityTemp1':'CTD-T1','SalinityDepth1':'CTD-P1','Salinity1':'CTD-S1',
            'TiltPod1':'Tilt1','TiltPod2':'Tilt2','TiltPod3':'Tilt3','TiltPod4':'Tilt4','TiltPod5':'Tilt5','TiltPod6':'Tilt6',
            'TiltPod7':'Tilt7','TiltPod8':'Tilt8','TiltPod9':'Tilt9','TiltPod10':'Tilt10','TiltPod11':'Tilt11','TiltPod12':'Tilt12',
            'AirTemp':'Ta',
            'AccelerometerVariance':'Accelerometer'}
 
-    newheader = []
-    for h in header:
-        newheader.append(hdict[h])
-    return newheader    
-    # hinds={}
-    # for h in header:
-    #     if h in hdict:
-    #         hinds[hdict[h]]=header.index(h)
 
-    # return hinds
+    hinds={}
+    for h in header:
+        if h in hdict:
+            hinds[hdict[h]]=header.index(h)
+
+    return hinds
 
 
 def ARGOS_HeaderCodes(header):
@@ -187,10 +172,10 @@ def ARGOS_HeaderCodes(header):
            'DEPTH T19': 'D19'}
 
 
-    
+
     hinf={}
     for h in header:
         if h in hdict:
             hinf[hdict[h]]=header.index(h)
-        
+
     return hinf

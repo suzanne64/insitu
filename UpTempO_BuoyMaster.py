@@ -11,7 +11,7 @@ def getBuoys():
     opf.close()
     data=data.split('\n')  #[0:-1]
     data=[d for d in data if d]
-    
+
     reporting={}
     dead={}
     newdead={}
@@ -24,7 +24,7 @@ def getBuoys():
             else: reporting[sd[0]]=sd[1:]
         else:
             dead[sd[0]]=sd[1:]
-                 
+
     return reporting,dead,buoyorder,newdead
 
 #==========================================
@@ -47,11 +47,225 @@ def BMvarDefs():
              'CTDP1_ind':'Index of first CTD Pressure',
              'CTDT1_ind':'Index of first CTD Temperature',
              'CTDS1_ind':'Index of first CTD Salinity'}
-             
+
 def BuoyMaster(bid):
 
 
-    bids={'300534062158460':{'notes':'UpTempO 2021 #5',
+    bids={
+          '123451234512345':{'notes':'UpTempO 2022 #0', # Mike\ Steele\ ONR\ SVPS_0001.pdf
+                             'name':['2022','0'],       #  also, ONR_SVPS_DataFields_2022.pdf
+                             'imeiabbv':'123451',       #  SVPS surface velocity program, TC cell and no ? droque
+                             'wmo':'987654',
+                             'deploymentDate':'',
+                             'deploymentLon':'',
+                             'deploymentLat':'',
+                             'vessel':'SASSIE',
+                             'brand':'Pacific Gyre',
+                             'pgname':'UW-SVPS-0001',
+                             'tdepths':[0.0,2.5,5.0,7.5,10,15,20],     # SST 0.14, hull 0.44
+                             'pdepths':[10,20,30],          # hull
+                             'CTDtdepths':[10,20,30],
+                             'CTDsdepths':[10,20],
+                             'CTDpdepths':[10,20,30],
+                             'HULLtdepths':[0.44],
+                             'HULLsdepths':[0.44],
+                             'vbatt_ind':1,
+                             'sub_ind':1},
+
+          '300534062892700':{'notes':'UpTempO 2022 #1', # Mike\ Steele\ ONR\ SVPS_0001.pdf
+                             'name':['2022','1'],       #  also, ONR_SVPS_DataFields_2022.pdf
+                             'imeiabbv':'892700',       #  SVPS surface velocity program, TC cell and no ? droque
+                             'wmo':'4802632',
+                             'deploymentDate':'',
+                             'deploymentLon':'',
+                             'deploymentLat':'',
+                             'vessel':'SASSIE',
+                             'brand':'Pacific Gyre',
+                             'pgname':'UW-SVPS-0001',
+                             'tdepths':[0.14],
+                             'HULLtdepths':[0.44],     # SST 0.14, hull 0.44
+                             'HULLsdepths':[0.38],          # hull
+                             'vbatt_ind':1,
+                             'sub_ind':1},
+
+          '300534062894700':{'notes':'UpTempO 2022 #2', # Mike\ Steele\ ONR\ SVP\ Salinity\ Ball\ 0003.pdf
+                             'name':['2022','2'],       #  also, ONR_SVPS_DataFields_2022.pdf
+                             'imeiabbv':'894700',
+                             'wmo':'4802633',
+                             'deploymentDate':'',
+                             'deploymentLon':'',
+                             'deploymentLat':'',
+                             'vessel':'SASSIE',
+                             'brand':'Pacific Gyre',
+                             'pgname':'UW-IB-SVPS-0003',
+                             'tdepths':[0.14],
+                             'HULLtdepths':[0.44],     # SST 0.14, hull 0.44
+                             'HULLsdepths':[0.38],          # hull
+                             'vbatt_ind':1,
+                             'sub_ind':1},
+
+          '300534062897730':{'notes':'UpTempO 2022 #3', # Mike\ Steele\ ONR\ SVP\ Salinity\ Ball\ 0004.pdf
+                             'name':['2022','3'],       #  also, ONR_SVPS_DataFields_2022.pdf
+                             'imeiabbv':'897730',
+                             'wmo':'4802634',
+                             'deploymentDate':'',
+                             'deploymentLon':'',
+                             'deploymentLat':'',
+                             'vessel':'SASSIE',
+                             'brand':'Pacific Gyre',
+                             'pgname':'UW-IB-SVPS-0004',
+                             'tdepths':[0.14],
+                             'HULLtdepths':[0.44],     # SST 0.14, hull 0.44
+                             'HULLsdepths':[0.38],          # hull
+                             'vbatt_ind':1,
+                             'sub_ind':1},
+
+          '300534062893700':{'notes':'UpTempO 2022 #4', # Mike\ Steele\ NASA\ SVP-S2_0001.pdf
+                         'name':['2022','4'],           #  also Nasa_SVPS_XIM_DataFields_2022.pdf
+                         'imeiabbv':'893700',
+                         'wmo':'4802635',
+                         'deploymentDate':'',
+                         'deploymentLon':'',
+                         'deploymentLat':'',
+                         'vessel':'SASSIE',
+                         'brand':'Pacific Gyre',
+                         'pgname':'UW-SVPS-XIM-0001',
+                         'tdepths':[0.14],              # SST 0.14m
+                         'CTDtdepths':[5],                 # 37IM 5m
+                         'CTDsdepths':[5],                 # 37IM
+                         'CTDpdepths':[5],                 # 37IM
+                         'vbatt_ind':1,
+                         'sub_ind':1},
+
+          '300534062894730':{'notes':'UpTempO 2022 #5', # Mike\ Steele\ NASA\ SVP-S2_0002.pdf
+                         'name':['2022','5'],           #  also Nasa_SVPS_XIM_DataFields_2022.pdf
+                         'imeiabbv':'894730',
+                         'wmo':'4802636',
+                         'deploymentDate':'',
+                         'deploymentLon':'',
+                         'deploymentLat':'',
+                         'vessel':'SASSIE',
+                         'brand':'Pacific Gyre',
+                         'pgname':'UW-SVPS-XIM-0002',
+                         'tdepths':[0.14],              # SST 0.14m
+                         'CTDtdepths':[5],                 # 37IM 5m
+                         'CTDsdepths':[5],                 # 37IM
+                         'CTDpdepths':[5],                 # 37IM
+                         'vbatt_ind':1,
+                         'sub_ind':1},
+
+          '300534062894740':{'notes':'UpTempO 2022 #6', # Mike\ Steele\ NASA\ SVP-S2_0003.pdf
+                         'name':['2022','6'],           #  also Nasa_SVPS_XIM_DataFields_2022.pdf
+                         'imeiabbv':'894740',
+                         'wmo':'4802637',
+                         'deploymentDate':'',
+                         'deploymentLon':'',
+                         'deploymentLat':'',
+                         'vessel':'SASSIE',
+                         'brand':'Pacific Gyre',
+                         'pgname':'UW-SVPS-XIM-0003',
+                         'tdepths':[0.14],              # SST 0.14m
+                         'CTDtdepths':[5],                 # 37IM 5m
+                         'CTDsdepths':[5],                 # 37IM
+                         'CTDpdepths':[5],                 # 37IM
+                         'vbatt_ind':1,
+                         'sub_ind':1},
+
+          '300534062898720':{'notes':'UpTempO 2022 #7', # Mike\ Steele\ ONR\ SVP-S2.pdf
+                         'name':['2022','7'],           #  also ONR_SVPS2_37IM_DataFields_2022.pdf
+                         'imeiabbv':'898720',
+                         'wmo':'4802638',
+                         'deploymentDate':'',
+                         'deploymentLon':'',
+                         'deploymentLat':'',
+                         'vessel':'SASSIE',
+                         'brand':'Pacific Gyre',
+                         'pgname':'UW-SVPS2-37IM-0001',
+                         'tdepths':[0.14],          # SST 0.14
+                         'HULLtdepths':[0.44],      # hull 0.44
+                         'CTDtdepths':[5],          # 37IM 5m
+                         'HULLsdepths':[0.38],      # hull 0.38
+                         'CTDsdepths':[5],          # 37IM
+                         'CTDpdepths':[5],          # 37IM
+                         'vbatt_ind':1,
+                         'sub_ind':1},
+
+          '300534063807110':{'notes':'UpTempO 2022 #8', # Mike\ Steele\ ONR\ SVP-S2_0002.pdf
+                         'name':['2022','8'],           #  also ONR_SVPS2_37IM_DataFields_2022.pdf
+                         'imeiabbv':'807110',
+                         'wmo':'4802639',
+                         'deploymentDate':'',
+                         'deploymentLon':'',
+                         'deploymentLat':'',
+                         'vessel':'SASSIE',
+                         'brand':'Pacific Gyre',
+                         'pgname':'UW-SVPS2-37IM-0002', # UW-SVPS2-0002 ?
+                         'tdepths':[0.14],          # SST 0.14
+                         'HULLtdepths':[0.44],      # hull 0.44
+                         'CTDtdepths':[5],          # 37IM 5m
+                         'HULLsdepths':[0.38],      # hull 0.38
+                         'CTDsdepths':[5],          # 37IM
+                         'CTDpdepths':[5],          # 37IM
+                         'vbatt_ind':1,
+                         'sub_ind':1},
+
+          '300534063704980':{'notes':'UpTempO 2022 #9', # Uptempo_NASA_Sound9_0002.pdf
+                         'name':['2022','9'],           #  also, Nasa_T-Chain_DataFields_2022.pdf
+                         'imeiabbv':'704980',
+                         'wmo':'4802640',
+                         'deploymentDate':'',
+                         'deploymentLon':'',
+                         'deploymentLat':'',
+                         'vessel':'SASSIE',
+                         'brand':'Pacific Gyre',
+                         'pgname':'UW-TC-S9-XT-XIM-0001',
+                         'tdepths':[0.25,2.5,5.0,7.5,15,25,35,50],
+                         'CTDtdepths':[10,20,30,40,60],
+                         'CTDsdepths':[10,20,30,40,60],
+                         'CTDpdepths':[10,20,30,40,60],
+                         'vbatt_ind':1,
+                         'sub_ind':1},
+
+          '300534063803100':{'notes':'UpTempO 2022 #10', # Uptempo_NASA_Sound9_0002.pdf
+                         'name':['2022','10'],           #  also, Nasa_T-Chain_DataFields_2022.pdf
+                         'imeiabbv':'803100',
+                         'wmo':'4802666',
+                         'deploymentDate':'',
+                         'deploymentLon':'',
+                         'deploymentLat':'',
+                         'vessel':'SIZRS',
+                         'brand':'Pacific Gyre',
+                         'pgname':'UW-TC-S9-XT-XIM-0002',
+                         'tdepths':[0.25,2.5,5.0,7.5,15,25,35,50],
+                         'CTDtdepths':[10,20,30,40,60],
+                         'CTDsdepths':[10,20,30,40,60],
+                         'CTDpdepths':[10,20,30,40,60],
+                         'vbatt_ind':1,
+                         'sub_ind':1},
+
+          '300534062896730':{'notes':'UpTempO 2022 #11', # Uptempo_ONR_Sound9_Seabird.pdf
+                         'name':['2022','11'],           #  also, ONR_T-Chain_DataFields_2022.pdf
+                         'imeiabbv':'896730',
+                         'wmo':'4802667',
+                         'deploymentDate':'',
+                         'deploymentLon':'',
+                         'deploymentLat':'',
+                         'vessel':'SIZRS',
+                         'brand':'Pacific Gyre',
+                         'pgname':'UW-TCS-37IM-S9XT-0001',
+                         'tdepths':[0.25,2.5,5.0,7.5,15,25,35,50],
+                         'HULLtdepths':[0.57],
+                         'CTDtdepths':[10,20,30,40,60],
+                         'HULLsdepths':[0.51],
+                         'CTDsdepths':[10,20,30,40,60],
+                         'CTDpdepths':[20,40,60],
+                         'vbatt_ind':1,
+                         'sub_ind':1},
+
+
+
+
+           '300534062158460':{'notes':'UpTempO 2021 #5',
                              'name':['2021','5'],
                              'imeiabbv':'158460',
                              'wmo':'',
@@ -65,7 +279,7 @@ def BuoyMaster(bid):
                              'sdepths':[0.28],
                              'vbatt_ind':1,
                              'sub_ind':1},
-                             
+
          '300534062158480':{'notes':'UpTempO 2021 #4',
                              'name':['2021','4'],
                              'imeiabbv':'158480',
@@ -80,7 +294,7 @@ def BuoyMaster(bid):
                              'sdepths':[0.28],
                              'vbatt_ind':1,
                              'sub_ind':1},
-                            
+
         '300534060051570':{'notes':'UpTempO 2021 #3',
                              'name':['2021','3'],
                              'imeiabbv':'051570',
@@ -122,16 +336,15 @@ def BuoyMaster(bid):
                              'vessel':'SIZRS',
                              'brand':'Pacific Gyre',
                              'pgname':'UW-TC-S9C-0001',
-                             'ddepths':[5,10,20,25],  # Called DepthPodx, units m
-                             # 'CTDSs':[5.,10.,20.],   # sal readings at 5, 10, 20m
-                             'tdepths':[0,2.5, 5, 7.5, 10, 15, 20, 25],
-                             'csdepths':[5,10,20],   # depth readings at 10 and 20 only, commented out 2/1/2022
+                             'pdepths':[5.,10.,20.,25.],  # Called DepthPodx, changed from ddepths 2/1/2022
+                             'CTDsdepths':[5.,10.,20.],   # sal readings at 5, 10, 20m
+                             'tdepths':[0.0, 2.5, 5.0, 7.5, 10.0, 15.0, 20.0, 25.0],
                              'vbatt_ind':1,
                              'bp_ind':1,
                              'sub_ind':1},
-                             
 
-                             
+
+
         '300234061160500':{'notes':'UpTempO 2020 #1',
                              'name':['2020','1'],
                              'imeiabbv':'160500',
@@ -146,7 +359,7 @@ def BuoyMaster(bid):
                              'vbatt_ind':7,
                              'ta_ind':45,
                              'sub_ind':46},
-                             
+
           '300234067939910':{'notes':'UpTempO 2020 JW-1',
                              'name':['2020','JW-2'],
                              'imeiabbv':'9910',
@@ -160,7 +373,7 @@ def BuoyMaster(bid):
                              'CTDS1_ind':10,
                              'CTDP1_ind':9,
                              'vbatt_ind':8},
-          
+
           '300234060320940':{'notes':'UpTempO 2019 #5',
                              'name':['2019','5'],
                              'brand':'Marlin-Yug',
@@ -190,8 +403,8 @@ def BuoyMaster(bid):
                            'bp_ind':24,
                            'vbatt_ind':25,
                            'sub_ind':26},
-			
-							
+
+
 	'300234068719480':{'inote':'Deployed 9/12/2019 via SIZRS by Mike',
                            'notes':'UpTempO 2019 #3',
                            'name':['2019','3'],
@@ -208,8 +421,8 @@ def BuoyMaster(bid):
                            'vbatt_ind':16,
                            'sub_ind':17,
                            'tilt1_ind':24},
-				
-				
+
+
 	'300234068519450':{'inote':'DEPLOYED 8/13/2019 via SIZRS by Jamie Morison',
 				'notes':'UpTempO 2019 #2',
 				'name':['2019','2'],
@@ -228,7 +441,7 @@ def BuoyMaster(bid):
 				'bp_ind':22,
 				'vbatt_ind':23,
 				'sub_ind':24},
-	
+
 	'300234068514830':{'inote':'DEPLOYED via airdrop by Jamie Morison 7/10/2019',
 				'notes':'UpTempO 2019 #1',
 				'name':['2019','1'],
@@ -258,7 +471,7 @@ def BuoyMaster(bid):
                            'biodepths':[0.0, 0.5, 1.0, 4.1, 6.4, 8.0, 4.7],
                            #----for "plot_warm" in webplots---
                            'lidepths':[0.0, 0.5, 1.0, 4.1, 6.4, 8.0]},
-				
+
     '300234064735100':{'notes':'used to be UpTempO 2017 #6... was returned',
                            'name':['2018','2'],
 			               'brand':'Pacific Gyre',
@@ -270,13 +483,61 @@ def BuoyMaster(bid):
                            'P1_ind':6,
                            'bp_ind':22,
                            'vbatt_ind':23,
-                           'sub_ind':24},		
-         }
-    
+                           'sub_ind':24},
+
+    '300234063993850':{'notes':'Amundsen 2016 06',
+                           'name':['2016','6'],
+			               'brand':'Pacific Gyre',
+                           'imeiabbv':'3850',
+                           'wmo':'4801613',             # get this from L1 or L2.dat
+                           'pgname':'UW-TC-37IM-0015',  # get this from api.pacificgyre.com
+                           'vessel':'Amundsen',
+                           'deploymentDate':'9/1/2016',
+                           'deploymentLon':-139.02, # get this from L1 or L2.dat
+                           'deploymentLat':70.44, # get this from L1 or L2.dat
+                           'pdepths':[25.],
+                           'tdepths':[0.0,2.5,5.0,7.5,10.,15.,20.,25.],
+                           'P1_ind':6,
+                           'T1_ind':9,
+                           'bp_ind':22,
+                           'vbatt_ind':23,
+                           'sub_ind':24},
+
+    '300234063994900':{'notes':'Araon 2016 03',
+                           'name':['2016','3'],
+			               'brand':'Pacific Gyre',
+                           'imeiabbv':'4900',
+                           'wmo':'4801613',
+                           'pgname':'UW-TC-1W-0005',
+                           'vessel':'Araon',
+                           'deploymentDate':'8/20/2016',
+                           'deploymentLon':-161.00,
+                           'deploymentLat':76.00,
+                           'pdepths':[25.],
+                           'tdepths':[0.0,2.5,5.0,7.5,10.,15.,20.,25.],
+                           'P1_ind':6,
+                           'T1_ind':9,
+                           'bp_ind':22,
+                           'vbatt_ind':23,
+                           'sub_ind':24},
+
+##     '300234064735100':{'notes':'JWARM 2018 #1',
+#                            'name':['2018','JW-1'],
+# 			               'brand':'Pacific Gyre',
+#                            'imeiabbv':'2490',
+#                            'vessel':'ICEX',
+#                            'pdepths':[20.,40.,60.],
+#                            'tdepths':[0.0,2.5,5.0,7.5,10.,15.,20.,25.,30.,35.,40.,50.,60.],
+#                            'T1_ind':9,
+#                            'P1_ind':6,
+#                            'bp_ind':22,
+#                            'vbatt_ind':23,
+#                            'sub_ind':24},
+
+          }
+
     binf=bids[bid]
     if 'listening' not in binf: binf['listening']='1'
 
 
     return binf
-
-
