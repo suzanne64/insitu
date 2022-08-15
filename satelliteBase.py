@@ -136,7 +136,7 @@ def BeaufortSatelliteMap(args,today,surface='SST',zoom=False): #strdate=None,sur
         # colorbar for SSS
         cb_sss_ax = fig1.add_axes([bbox_ax1.x0, bbox_ax1.y0*.67, bbox_ax1.x1-bbox_ax1.x0, 0.02]) # left, bot, width, height
         cbs = plt.colorbar(cbsss, cax=cb_sss_ax, orientation='horizontal')
-        cbs.set_label(label=f'{args.satelliteSSS} SMAP Salinity on {sssdate}',fontsize=9) #, position=[bbox_ax1.x1+bbox_ax1.x0,0.02])
+        cbs.set_label(label=f'JPL SMAP Salinity on {sssdate}',fontsize=9) #, position=[bbox_ax1.x1+bbox_ax1.x0,0.02])
         cbs.ax.tick_params(labelsize=9)
 
     # ICE filled contour
@@ -161,7 +161,7 @@ def BeaufortSatelliteMap(args,today,surface='SST',zoom=False): #strdate=None,sur
         if not zoom:
             ax1.set_title(f'SASSIE Temperature data {sstdate.month}/{sstdate.day}/{sstdate.year}',fontsize=16)
             # figstr=f'{args.base_dir}/figs/sassie_Temp_{sstdate.month:02d}-{sstdate.day:02d}-{sstdate.year}.png'
-            figstr=f'{args.base_dir}/figs/sassie_Temp_{today.year}{today.month:02}{today.day:02}T{today.hour:02}:{today.minute:02}:{today.second:02}.png'
+            figstr=f'{args.base_dir}/figs/sassie_Temp_{today.year}{today.month:02}{today.day:02}T{today.hour:02}.png' #:{today.minute:02}:{today.second:02}
         else:
             ax1.set_title(f'SASSIE Temperature data {sstdate.month}/{sstdate.day}/{sstdate.year} insitu',fontsize=16)
             gl = ax1.gridlines(draw_labels=True, dms=True, x_inline=False, y_inline=False)
@@ -169,14 +169,13 @@ def BeaufortSatelliteMap(args,today,surface='SST',zoom=False): #strdate=None,sur
             gl.xformatter = LONGITUDE_FORMATTER
             gl.ylocator = mticker.FixedLocator(np.arange(68,82,0.25))
             gl.yformatter = LATITUDE_FORMATTER
-            figstr=f'{args.base_dir}/figs/sassie_Temp_{today.year}{today.month:02}{today.day:02}T{today.hour:02}:{today.minute:02}:{today.second:02}Zoom.png'
+            figstr=f'{args.base_dir}/figs/sassie_Temp_{today.year}{today.month:02}{today.day:02}T{today.hour:02}_Zoom.png'
             # figstr=f'../figs/sassie_Temp_{sstdate.month:02d}-{sstdate.day:02d}-{sstdate.year}Zoom.png'
     if surface == 'SSS':
         print('              sssdate',sssdate)
         if not zoom:
             ax1.set_title(f'SASSIE Salinity data {sssdate.month}/{sssdate.day}/{sssdate.year}',fontsize=16)
-            figstr=f'{args.base_dir}/figs/sassie_Sali_{today.year}{today.month:02}{today.day:02}T{today.hour:02}:{today.minute:02}:{today.second:02}.png'
-            # figstr=f'../figs/sassie_Sali_{sssdate.month:02d}-{sssdate.day:02d}-{sssdate.year}.png'  # {args.satelliteSSS}_
+            figstr=f'{args.base_dir}/figs/sassie_Sali_{today.year}{today.month:02}{today.day:02}T{today.hour:02}.png'
         else:
             ax1.set_title(f'SASSIE Salinity data {sssdate.month}/{sssdate.day}/{sssdate.year} insitu',fontsize=16)
             gl = ax1.gridlines(draw_labels=True, dms=True, x_inline=False, y_inline=False) #, alpha=0.3) crs=ccrs.PlateCarree(),
@@ -184,8 +183,7 @@ def BeaufortSatelliteMap(args,today,surface='SST',zoom=False): #strdate=None,sur
             gl.xformatter = LONGITUDE_FORMATTER
             gl.ylocator = mticker.FixedLocator(np.arange(68,82,0.25))
             gl.yformatter = LATITUDE_FORMATTER
-            figstr=f'{args.base_dir}/figs/sassie_Sali_{today.year}{today.month:02}{today.day:02}T{today.hour:02}:{today.minute:02}:{today.second:02}Zoom.png'
-            # figstr=f'../figs/sassie_Sali_{sssdate.month:02d}-{sssdate.day:02d}-{sssdate.year}Zoom.png'
+            figstr=f'{args.base_dir}/figs/sassie_Sali_{today.year}{today.month:02}{today.day:02}T{today.hour:02}_Zoom.png'
     # establish labels dictionary
     newline = '\n'
 

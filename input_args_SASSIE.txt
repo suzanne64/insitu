@@ -1,6 +1,6 @@
 --base_dir=/Users/suzanne/SASSIE
---mapDomain=-180, -138, 65, 80
+--mapDomain=-160, -138, 69, 80
 --smallDomain=100000
---buoyIDS=
+--buoyIDS=300534062892700
 --swiftIDS=09,12,13,15,16,17
---hourstoPlot=10000
+--hourstoPlot=48

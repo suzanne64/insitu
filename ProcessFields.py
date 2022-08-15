@@ -23,7 +23,7 @@ import matplotlib.pyplot as plt # ver 3.5
 from itertools import chain
 
 
-#======= Get NSIDC ICE concentration map ==============
+#======= Get ICE concentration map from Bremen ==============
 def getICE(args,nors='n'):
 
     args.strdate = None
@@ -73,7 +73,7 @@ def getICE(args,nors='n'):
     return strdate,ice,icexx,iceyy
 
 
-#======= Get NSIDC ICE concentration map ==============
+#======= Get NSIDC ICE concentration map ============== NOT USING THIS PRODUCT
 def getICE_nsidc(args,nors='n'):
 
     # hardwiring 'today' to check working with 0081 product
@@ -191,7 +191,7 @@ def getSST(args):
 
     return objdate, sst, sstlon, sstlat
 
-#========= Get SSS satellite map ==================
+#========= Get SSS satellite map ================== ONLY USING JPL-L2B-del
 def datasetInfo(src,date_range,bounding_box):
 
     src = src.strip()
@@ -230,10 +230,7 @@ def getSSS(args):
     else:
         objdate = dt.datetime.strptime(args.strdate,'%Y%m%d')
 
-    # if args.satelliteSSS == 'JPL-L3':
-    # create a local folder for the data if it doesn't exist
-    #### make this the ftp site
-    savedir = f'{args.base_dir}/SatelliteFields/smap/{args.satelliteSSS}'
+    savedir = f'{args.base_dir}/SatelliteFields/JPL_SMAP'
     os.makedirs(savedir, exist_ok=True)
 
     start_date = f'{objdate.year}-{objdate.month:02d}-{objdate.day:02}T00:00:00' #needed for download
@@ -253,7 +250,7 @@ def getSSS(args):
             break
 
         date_range =  start_date + "/" + end_date
-        response = datasetInfo(args.satelliteSSS,date_range,bounding_box)
+        response = datasetInfo('JPL-L2B-del',date_range,bounding_box)
 
         # download the granules
         granules = response.json()['feed']['entry']
