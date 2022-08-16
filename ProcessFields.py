@@ -626,11 +626,6 @@ def getSWIFT(args,ID,starttime,endtime,eng):
     if endtime=='':
         swiftfile = f'buoy-SWIFT {ID}-start-{starttime}-end-None.mat'
     filecsv = f'{swiftpath}/csv/{os.path.splitext(swiftfile)[0]}.csv'
-    print('line 634 in pfields')
-    print(swiftfile)
-    print(filecsv)
-    print()
-    print()
     swift_struct = sio.loadmat(f'{swiftpath}/{swiftfile}')
     SWIFT = swift_struct['SWIFT']
 
@@ -641,28 +636,16 @@ def getSWIFT(args,ID,starttime,endtime,eng):
 
     CTdepth = np.array([jtem for jtem in chain(*[item.tolist() for item in chain(*SWIFT[0,:]['CTdepth'])])])
     # CTdepth[buoydate==0]
-    print(f'CT depths for swift{ID} = {CTdepth}, with length={len(CTdepth)}')
     unique, counts = np.unique(CTdepth, return_counts=True)
     baddepth = unique[counts<10]
-
-    print(unique,baddepth)
-    print(counts)
-    # exit(-1)
-
     ndepths = len(unique[counts>10])
-    print('ndepths',ndepths)
-    # CTdepth = np.reshape(CTdepth,(-1,ndepths))
-    # print(f'CT depths for buoy {buoyid[0]}',np.unique(CTdepth))
 
     # variables come in as list of arrays of nested lists, where each array has one value.
     lon = np.array([jtem for jtem in chain(*[item.tolist() for item in chain(*SWIFT[0,:]['lon'])])])
     lat = np.array([jtem for jtem in chain(*[item.tolist() for item in chain(*SWIFT[0,:]['lat'])])])
-    print('line 663 length lon and lat',len(lon),len(lat))
 
     salinity = np.array([jtem for jtem in chain(*[item.tolist() for item in chain(*SWIFT[0,:]['salinity'])])])
-    print('line 665',len(salinity))
     salinity = salinity[CTdepth!=baddepth]
-    print('line 667',len(salinity))
     salinity = np.reshape(salinity,(-1,ndepths))
     salinity[salinity<22] = np.nan
 
@@ -672,7 +655,6 @@ def getSWIFT(args,ID,starttime,endtime,eng):
 
     CTdepth = CTdepth[CTdepth!=baddepth]
     CTdepth = np.reshape(CTdepth,(-1,ndepths))
-    print('size CTdepth',CTdepth.shape,salinity.shape,watertemp.shape)
 
     time = np.array([jtem for jtem in chain(*[item.tolist() for item in chain(*SWIFT[0,:]['time'])])])
     # # # to check in matlab datevec(SWIFT(end).time)

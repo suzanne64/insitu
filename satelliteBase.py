@@ -47,25 +47,15 @@ def BeaufortSatelliteMap(args,today,surface='SST',zoom=False): #strdate=None,sur
     normsst = colors.BoundaryNorm(np.arange(-2,6,0.5),cmap.N)
     normsss = colors.BoundaryNorm(np.arange(22,31,0.25),cmap.N)
 
-    # # establish contour levels and colors
-    # sstcolors=['k','darkslateblue','blue','deepskyblue','cyan','limegreen','lime','yellow','darkorange','orangered','red','saddlebrown']
-    # sstbounds=[-2.0,-1.5,-1.0,-0.5,0.0,0.5,1.0,2.0,3.0,4.0,5.0]   # SST
-
-    # ssscolors=['k','darkslateblue','blue','deepskyblue','cyan','limegreen','lime','yellow','darkorange','orangered','red','saddlebrown']
-    # sssbounds=list(np.arange(22,30))   # salinity
-    # sssbounds.insert(0,0)
-    # ssscmap = mpl.colors.ListedColormap(ssscolors[1:])
-
     icecolors=['dimgray','gray','darkgray','lightgray','aliceblue','powderblue']
-#    icecolors=['dimgray','yellow','darkgray','red','whitesmoke','powderblue']
-    # icecolors=['0.4','0.5','0.6','0.725','0.85','1.0']
     icelevels=[0.2,0.3,0.4,0.5,0.75]
 
     # set up figure
-    fig1, ax1 = plt.subplots(1,1, figsize=(10,10))
     if not zoom:
+        fig1, ax1 = plt.subplots(1,1, figsize=(12,10))
         ax1 = plt.subplot(1,1,1,projection=ccrs.NorthPolarStereo(central_longitude=-140))
     else:
+        fig1, ax1 = plt.subplots(1,1, figsize=(10,10))
         ax1 = plt.subplot(1,1,1,projection=ccrs.NorthPolarStereo(central_longitude=args.shipLon))
 
     ax1.set_position([0.1,0.22,0.55,0.7])  # position on page
@@ -131,7 +121,7 @@ def BeaufortSatelliteMap(args,today,surface='SST',zoom=False): #strdate=None,sur
             cbsss = ax1.scatter(ds['longitude'], ds['latitude'], 15, ds['smap_sss'],
                                 cmap=cmap, norm=normsss, transform=ccrs.PlateCarree())
             if len(ds['smap_sss']) == 0:
-                ax1.text(-158,68.8,'No SSS data in last two days',transform=ccrs.PlateCarree(),fontsize=14)
+                ax1.text(-158,68.8,'SSS data unavailable',transform=ccrs.PlateCarree(),fontsize=14)
             ax1.gridlines(crs=ccrs.PlateCarree(),xlocs=np.arange(-180,180,45),ylocs=np.arange(70,80,2), color='gray',x_inline=False)
         # colorbar for SSS
         cb_sss_ax = fig1.add_axes([bbox_ax1.x0, bbox_ax1.y0*.67, bbox_ax1.x1-bbox_ax1.x0, 0.02]) # left, bot, width, height
