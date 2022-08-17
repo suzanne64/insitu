@@ -176,7 +176,7 @@ def plotSuite(args):
                     dfPrev.drop_duplicates(inplace=True)
                     dfPrev.to_csv(utoFile,index=False)
             else:
-                dfNew.to_csv(utoFile,index=False)
+                dfNew.to_csv(utoFile,float_format='%.3f',index=False)
 
         # legends for temperatures
         legend10 = ax0.legend(handles=buoyTpts,bbox_to_anchor=(1.1,1),loc=2,borderaxespad=0.,fontsize=9,title='HydroBuoy Data')
@@ -285,7 +285,7 @@ def plotSuite(args):
                 dfswiftPrev.drop_duplicates(inplace=True)
                 dfswiftPrev.to_csv(swiftFile,index=False)
             else:
-                dfswiftNew.to_csv(swiftFile,index=False)
+                dfswiftNew.to_csv(swiftFile,float_format='%.3f',index=False)
 
         # work the legends on the plots
         legend20 = ax0.legend(handles=swiftTpts,bbox_to_anchor=(1.1, 0.6), loc=2, borderaxespad=0.,fontsize=9,title='Swift Data' )

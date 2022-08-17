@@ -476,6 +476,13 @@ def getPGbuoy(args,bid,user,strdate=None):
                 df = df[['index','Date','Lat','Lon',tcol,scol]]
             else:
                 df = df[['index','Date','Lat','Lon',tcol]]
+        # formatting
+        df['Date'] = df['Date'].dt.round('1s')
+        df['Lat'] = df['Lat'].map('{:.03f}'.format).astype(float)
+        df['Lon'] = df['Lon'].map('{:.03f}'.format).astype(float)
+        df[tcol] = df[tcol].map('{:.03f}'.format).astype(float)
+        if slist:
+            df[scol] = df[scol].map('{:.03f}'.format).astype(float)
 
     return df
 
@@ -670,13 +677,20 @@ def getSWIFT(args,ID,starttime,endtime,eng):
 
     # fill dataFrame
     dfSwift['DateTime'] = datetime
+    dfSwift['DateTime'] = dfSwift['DateTime'].dt.round('1s')
     # dfSwift['DateTimeStr'] = dfSwift['DateTime'].dt.strftime('%d/%m/%Y %H:%M:%S')
     dfSwift['Lat'] = lat
     dfSwift['Lon'] = lon
     dfSwift['BuoyID'] = buoyid
+    # reduce to three decimals
+    dfSwift['Lat'] = dfSwift['Lat'].map('{:.03f}'.format).astype(float)
+    dfSwift['Lon'] = dfSwift['Lon'].map('{:.03f}'.format).astype(float)
     for ii in range(ndepths):
         dfSwift[f'CTdepth-{ii}'] = CTdepth[:,ii]
         dfSwift[f'Salinity-{ii}'] = salinity[:,ii]
         dfSwift[f'WaterTemp-{ii}'] = watertemp[:,ii]
+        # reduce to three decimals
+        dfSwift[f'Salinity-{ii}'] = dfSwift[f'Salinity-{ii}'].map('{:.03f}'.format).astype(float)
+        dfSwift[f'WaterTemp-{ii}'] = dfSwift[f'WaterTemp-{ii}'].map('{:.03f}'.format).astype(float)
 
     return dfSwift
