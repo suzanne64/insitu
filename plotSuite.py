@@ -56,6 +56,7 @@ def plotSuite(args):
     # catch all dictionary for column names
     outHeaders = {'Date':'Date','Lat':'Lat','Lon':'Lon',
        'DateTimeStr':'Date',
+       'DateTime':'Date',
        'CTD-S2':'Salinity',
        'S1':'Salinity',
        'Salinity-0':'Salinity',
@@ -63,7 +64,6 @@ def plotSuite(args):
        'Ts':'Temperature',
        'T1':'Temperature',
        'WaterTemp-0':'Temperature'}
-    columnsWrite = ['Date','Lat','Lon']
 
     # loops through the buoy IDs
     if bool(args.buoyIDS):
@@ -78,31 +78,54 @@ def plotSuite(args):
             # make pandas dataframe
             df = pfields.getPGbuoy(args,bid,'pscapluw')
             binf = BM.BuoyMaster(bid)
+            columnsWrite = ['Date','Lat','Lon']
 
             if len(df)>0:  # if there are data
                 # temperature data on plots
-                (tcol,) = [col for col in df.columns if col.startswith('T') or col.startswith('CTD-T')]
-                buoyTlabel = f"{binf['name'][0]}-{int(binf['name'][1]):02d}: {df[tcol].iloc[-1]:.1f}{degree}C, {df['Lon'].iloc[-1]:.2f}W, {df['Lat'].iloc[-1]:.2f}N"
-                buoyTpts.append(ax0.scatter(df['Lon'],df['Lat'], 2*df['index'], c=df[tcol],
-                            cmap=cmap, norm=normsst, transform=ccrs.PlateCarree(),
-                            edgecolor='face', label=buoyTlabel))
-                if args.smallDomain is not None:
-                    buoyTptsZ.append(ax10.scatter(df['Lon'],df['Lat'], 2*df['index'], c=df[tcol],
-                                cmap=cmap, norm=normsst, transform=ccrs.PlateCarree(),  #cmap=sstcmap, norm=sstnorm,
+                try:
+                    (tcol,) = [col for col in df.columns if col.startswith('T') or col.startswith('CTD-T')]
+                    buoyTlabel = f"{binf['name'][0]}-{int(binf['name'][1]):02d}: {df[tcol].iloc[-1]:.1f}{degree}C, {df['Lon'].iloc[-1]:.2f}W, {df['Lat'].iloc[-1]:.2f}N"
+                    buoyTpts.append(ax0.scatter(df['Lon'],df['Lat'], 2*df['index'], c=df[tcol],
+                                cmap=cmap, norm=normsst, transform=ccrs.PlateCarree(),
                                 edgecolor='face', label=buoyTlabel))
-                columnsWrite.append(tcol)
+                    if args.smallDomain is not None:
+                        buoyTptsZ.append(ax10.scatter(df['Lon'],df['Lat'], 2*df['index'], c=df[tcol],
+                                    cmap=cmap, norm=normsst, transform=ccrs.PlateCarree(),  #cmap=sstcmap, norm=sstnorm,
+                                    edgecolor='face', label=buoyTlabel))
+                    columnsWrite.append(tcol)
+                except:
+                    df['Ts'] = np.nan
+                    buoyTlabel = f"{binf['name'][0]}-{int(binf['name'][1]):02d}: no temperature data"
+                    buoyTpts.append(ax1.scatter(df['Lon'], df['Lat'], df['Ts'], c=df['Ts'],  # <- dummy vars
+                                cmap=cmap, norm=normsst, transform=ccrs.PlateCarree(),
+                                edgecolor='face', label=buoyTlabel))
+                    buoyTptsZ.append(ax11.scatter(df['Lon'], df['Lat'], df['Ts'], c=df['Ts'],
+                                cmap=cmap, norm=normsst, transform=ccrs.PlateCarree(),
+                                edgecolor='face', label=buoyTlabel))
+                    columnsWrite.append('Ts')
 
                 # salinity data on plots
-                (scol,) = [col for col in df.columns if col.startswith('S') or col.startswith('CTD-S')]
-                buoySlabel = f"{binf['name'][0]}-{int(binf['name'][1]):02d}: {df[scol].iloc[-1]:.1f} psu, {df['Lon'].iloc[-1]:.2f}W, {df['Lat'].iloc[-1]:.2f}N"
-                buoySpts.append(ax1.scatter(df['Lon'], df['Lat'], 2*df['index'], c=df[scol],
-                            cmap=cmap, norm=normsss, transform=ccrs.PlateCarree(),
-                            edgecolor='face', label=buoySlabel))
-                if args.smallDomain is not None:
-                    buoySptsZ.append(ax11.scatter(df['Lon'], df['Lat'], 2*df['index'], c=df[scol],
+                try:
+                    (scol,) = [col for col in df.columns if col.startswith('S') or col.startswith('CTD-S')]
+                    buoySlabel = f"{binf['name'][0]}-{int(binf['name'][1]):02d}: {df[scol].iloc[-1]:.1f} psu, {df['Lon'].iloc[-1]:.2f}W, {df['Lat'].iloc[-1]:.2f}N"
+                    buoySpts.append(ax1.scatter(df['Lon'], df['Lat'], 2*df['index'], c=df[scol],
                                 cmap=cmap, norm=normsss, transform=ccrs.PlateCarree(),
                                 edgecolor='face', label=buoySlabel))
-                columnsWrite.append(scol)
+                    if args.smallDomain is not None:
+                        buoySptsZ.append(ax11.scatter(df['Lon'], df['Lat'], 2*df['index'], c=df[scol],
+                                    cmap=cmap, norm=normsss, transform=ccrs.PlateCarree(),
+                                    edgecolor='face', label=buoySlabel))
+                    columnsWrite.append(scol)
+                except:
+                    df['S1'] = np.nan
+                    buoySlabel = f"{binf['name'][0]}-{int(binf['name'][1]):02d}: no salinity data"
+                    buoySpts.append(ax1.scatter(df['Lon'], df['Lat'], df['S1'], c=df['S1'],  # <- dummy vars
+                                cmap=cmap, norm=normsss, transform=ccrs.PlateCarree(),
+                                edgecolor='face', label=buoySlabel))
+                    buoySptsZ.append(ax11.scatter(df['Lon'], df['Lat'], df['S1'], c=df['S1'],
+                                cmap=cmap, norm=normsss, transform=ccrs.PlateCarree(),
+                                edgecolor='face', label=buoySlabel))
+                    columnsWrite.append('S1')
 
             else:   # if datafiles from website are empty.
 
@@ -140,22 +163,23 @@ def plotSuite(args):
             # print('sheetname',sheetname)
             # dfWrite.to_excel(writer, sheet_name=sheetname)
 
-            # writes/append  data to excel file
-            utoFile = f'{args.base_dir}/UTO_{binf["name"][0]}-{int(binf["name"][1]):02d}.xlsx'
+            # writes/append  data to csv file
+            utoFile = f'{args.base_dir}/UTO_{binf["name"][0]}-{int(binf["name"][1]):02d}.csv'
+            print('utoFile',utoFile)
             if os.path.exists(utoFile):
-                dfPrev = pd.read_excel(utoFile)
+                dfPrev = pd.read_csv(utoFile)
                 if dfPrev.empty is True:
-                    dfNew.to_excel(utoFile,index=False)
+                    print('line 150 dfPrev is empty I guess',dfPrev.head())
+                    dfNew.to_csv(utoFile,index=False)
                 else:
                     dfPrev = pd.concat([dfPrev,dfNew],axis=0,ignore_index=True)
                     dfPrev.drop_duplicates(inplace=True)
-                    dfPrev.to_excel(utoFile,index=False)
+                    dfPrev.to_csv(utoFile,index=False)
             else:
-                dfNew.to_excel(utoFile,index=False)
+                dfNew.to_csv(utoFile,index=False)
 
         # legends for temperatures
         legend10 = ax0.legend(handles=buoyTpts,bbox_to_anchor=(1.1,1),loc=2,borderaxespad=0.,fontsize=9,title='HydroBuoy Data')
-        print('line 174',buoyTpts)
         frame10 = legend10.get_frame()
         frame10.set_facecolor('lightgray')
         frame10.set_edgecolor('black')
@@ -178,7 +202,6 @@ def plotSuite(args):
         frame11.set_edgecolor('black')
         leg = ax1.get_legend()
         for ii in range(len(bids)):
-            print(ii)
             leg.legendHandles[ii].set_color('k')
 
         legend111 = ax11.legend(handles=buoySptsZ,bbox_to_anchor=(1.1,1),loc=2,borderaxespad=0.,fontsize=9,title='HydroBuoy Data')
@@ -208,10 +231,11 @@ def plotSuite(args):
         swiftSptsZ=[]
         for ID in IDs:
             dfSwift = pfields.getSWIFT(args, ID, starttime, endtime, eng)
+
+            dfSwift.reset_index(inplace=True)  # used for plotting
             print(dfSwift.head())
             print(dfSwift.columns)
-            dfSwift.reset_index(inplace=True)  # used for plotting
-            columnsWrite = ['DateTimeStr','Lat','Lon','WaterTemp-0','Salinity-0']
+            columnsWrite = ['DateTime','Lat','Lon','WaterTemp-0','Salinity-0']
 
             if not dfSwift['Lon'].isnull().all():
                 Tcols = [col for col in dfSwift.columns if col.startswith('WaterTemp')]
@@ -249,17 +273,19 @@ def plotSuite(args):
             # dfSwift.drop(columns=(['index','DateObj']),axis=1, inplace=True)
             dfswiftNew = dfSwift[columnsWrite]
             dfswiftNew.rename(columns=outHeaders,inplace=True)
+            # need to made Date a string for .csv ?
             # sheetname = f'Swift{ID}'
             # dfSwiftWrite.to_excel(writer, sheet_name=sheetname)
-            # write/append data to excel file
-            swiftFile = f'{args.base_dir}/Swift{ID}.xlsx'
+
+            # write/append data to csv file
+            swiftFile = f'{args.base_dir}/Swift{ID}.csv'
             if os.path.exists(swiftFile):
-                dfswiftPrev = pd.read_excel(swiftFile)
+                dfswiftPrev = pd.read_csv(swiftFile)
                 dfswiftPrev = pd.concat([dfswiftPrev,dfswiftNew],axis=0,ignore_index=True)
                 dfswiftPrev.drop_duplicates(inplace=True)
-                dfswiftPrev.to_excel(swiftFile,index=False)
+                dfswiftPrev.to_csv(swiftFile,index=False)
             else:
-                dfswiftNew.to_excel(swiftFile,index=False)
+                dfswiftNew.to_csv(swiftFile,index=False)
 
         # work the legends on the plots
         legend20 = ax0.legend(handles=swiftTpts,bbox_to_anchor=(1.1, 0.6), loc=2, borderaxespad=0.,fontsize=9,title='Swift Data' )
@@ -316,8 +342,8 @@ def plotSuite(args):
     # send figures to the ftp site
     os.system(f'/usr/local/bin/lftp sftp://sassie@ftp.polarscience.org/ --password 2Icy2Fresh! -e "cd /FTP/insitu/images/; put {figstr0};put {figstr10};put {figstr1};put {figstr11}; bye"')
 
-    # send the data files (excel) to the ftp site
-    os.system(f'/usr/local/bin/lftp sftp://sassie@ftp.polarscience.org/ --password 2Icy2Fresh! -e "cd /FTP/insitu/data/; mput *.xlsx; bye"')
+    # send the data files (csv) to the ftp site
+    os.system(f'/usr/local/bin/lftp sftp://sassie@ftp.polarscience.org/ --password 2Icy2Fresh! -e "cd /FTP/insitu/data/; mput *.csv; bye"')
         # plt.show(block=False)
         # plt.pause(0.001)
         # input('Press enter to close figures.')

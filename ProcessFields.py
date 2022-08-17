@@ -410,7 +410,6 @@ def getPGbuoy(args,bid,user,strdate=None):
         # df['Date'] = pd.to_datetime(df['Date'],format='%m/%d/%y %H:%M')
         df.sort_values(by='Date', inplace=True)
         df.reset_index(inplace=True)
-        print(df.head())
 
         # find the shallowest temperature measurement
         try:
@@ -658,14 +657,9 @@ def getSWIFT(args,ID,starttime,endtime,eng):
 
     time = np.array([jtem for jtem in chain(*[item.tolist() for item in chain(*SWIFT[0,:]['time'])])])
     # # # to check in matlab datevec(SWIFT(end).time)
-    datetimestr = [dt.datetime.fromordinal(int(t)) + dt.timedelta(t%1) - dt.timedelta(days=366) for t in time]
-    year = np.array([datetimestr[ii].year for ii in range(len(datetimestr))])
-    month = np.array([datetimestr[ii].month for ii in range(len(datetimestr))])
-    day = np.array([datetimestr[ii].day for ii in range(len(datetimestr))])
-    hour = np.array([datetimestr[ii].hour + datetimestr[ii].minute/60. + datetimestr[ii].second/3600. for ii in range(len(datetimestr))])
+    datetime = [dt.datetime.fromordinal(int(t)) + dt.timedelta(t%1) - dt.timedelta(days=366) for t in time]
 
-    # make column headers for dataFrame
-    columns = ['DateTimeStr','Year','Month','Day','Hour','Lat','Lon','BuoyID']
+    columns = ['DateTime','Lat','Lon','BuoyID']
     [columns.append(f'CTdepth-{ii}') for ii in range(ndepths)]
     [columns.append(f'Salinity-{ii}') for ii in range(ndepths)]
     [columns.append(f'WaterTemp-{ii}') for ii in range(ndepths)]
@@ -675,11 +669,8 @@ def getSWIFT(args,ID,starttime,endtime,eng):
     dfSwift = pd.DataFrame(columns=columns)
 
     # fill dataFrame
-    dfSwift['DateTimeStr'] = datetimestr
-    dfSwift['Year'] = year
-    dfSwift['Month'] = month
-    dfSwift['Day'] = day
-    dfSwift['Hour'] = hour
+    dfSwift['DateTime'] = datetime
+    # dfSwift['DateTimeStr'] = dfSwift['DateTime'].dt.strftime('%d/%m/%Y %H:%M:%S')
     dfSwift['Lat'] = lat
     dfSwift['Lon'] = lon
     dfSwift['BuoyID'] = buoyid
@@ -687,9 +678,5 @@ def getSWIFT(args,ID,starttime,endtime,eng):
         dfSwift[f'CTdepth-{ii}'] = CTdepth[:,ii]
         dfSwift[f'Salinity-{ii}'] = salinity[:,ii]
         dfSwift[f'WaterTemp-{ii}'] = watertemp[:,ii]
-    # add column of datetime object for sorting for output .xlsx
-    dfSwift.loc[:,'DateObj'] = pd.to_datetime(dfSwift['DateTimeStr'],format='%Y-%m-%d %H:%M:%S')
-
-    dfSwift.to_csv(filecsv,index=False)
 
     return dfSwift
