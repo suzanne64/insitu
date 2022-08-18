@@ -21,7 +21,9 @@ import scipy.io as sio
 from itertools import chain
 import matplotlib.pyplot as plt # ver 3.5
 from itertools import chain
-
+import subprocess
+import json
+from scipy import interpolate
 
 #======= Get ICE concentration map from Bremen ==============
 def getICE(args,nors='n'):
@@ -486,139 +488,6 @@ def getPGbuoy(args,bid,user,strdate=None):
 
     return df
 
-# ========= download buoy data from apl.pacificgyre.com ==================
-# def getSIZRS(bid,strdate=None,prevdays=1):
-
-    # user = 'pscapluw'
-    # psswd=userCred(user)
-
-    # if strdate is None:
-    #     objdate = dt.datetime.now() + dt.timedelta(days=1) # to get the entire day
-    #     strdate="%d%.2d%.2d" % (objdate.year,objdate.month,objdate.day)
-    # else:
-    #     objdate = dt.datetime.strptime(strdate,'%Y%m%d') + dt.timedelta(days=1)
-
-    # enddate=f'{objdate.month:02d}/{objdate.day:02d}/{objdate.year:d}'
-    # prevobjdate = objdate - dt.timedelta(days=prevdays)
-    # startdate=f'{prevobjdate.month:02d}/{prevobjdate.day:02d}/{prevobjdate.year:d}'
-    # # if '/' not in startdate:  # reformat
-    # #     startdate=f'{startdate[:2]}/{startdate[2:4]}/{startdate[4:]}'
-
-    # strcommand='http://api.pacificgyre.com/api2/getData.aspx?userName='
-    # strcommand+=user+'&password='+psswd+'&startDate='+startdate
-    # strcommand+='&endDate='+enddate+'&commIDs='+bid+'&fileFormat=CSV'
-
-    # fid=urllib.request.urlopen(strcommand)
-    # data=fid.read()
-    # fid.close()
-    # data=str(data,'utf-8')
-
-    # rstartdate=startdate.replace('/','-')
-    # renddate=enddate.replace('/','-')
-
-    # opw=open('../BuoyData/old/UpTempO_'+bid+'_'+rstartdate+'-'+renddate+'.csv','w')
-    # opw.write(data)
-    # opw.close()
-    # os.system('cp ../BuoyData/old/UpTempO_'+bid+'_'+rstartdate+'-'+renddate+'.csv ../BuoyData/UpTempOLatest_'+bid+'.csv')
-
-# # ========= download buoy data from apl.pacificgyre.com ==================
-# def getLevelData(level,bid,strdate=None,prevdays=1):
-
-#     binf = BM.BuoyMaster(bid)
-
-#     if strdate is None:
-#         objdate = dt.datetime.now() + dt.timedelta(days=1) # to get the entire day
-#         strdate="%d%.2d%.2d" % (objdate.year,objdate.month,objdate.day)
-#     else:
-#         objdate = dt.datetime.strptime(strdate,'%Y%m%d') + dt.timedelta(days=1)
-
-#     enddate=f'{objdate.month:02d}/{objdate.day:02d}/{objdate.year:d}'
-#     prevobjdate = objdate - dt.timedelta(days=prevdays)
-#     startdate=f'{prevobjdate.month:02d}/{prevobjdate.day:02d}/{prevobjdate.year:d}'
-
-#     ##### I just chose a file for now.
-#     if level == 1:
-#         theurl = 'http://psc.apl.washington.edu/UpTempO/WebDATA/LEVEL1'
-#         theurlfile =f"UpTempO_{binf['name'][0]}_{binf['name'][1].zfill(2)}_{bid}_{binf['vessel']}*.dat"
-#         print(theurlfile)
-#         exit(-1)
-#     if level == 2:
-#         theurl = 'http://psc.apl.washington.edu/UpTempO/WebDATA/LEVEL2'
-#         theurlfile =f"UTO_{binf['name'][0]}-{binf['name'][1].zfill(2)}_{bid}_L2.dat"
-#     urllib.request.urlretrieve(f'{theurl}/{theurlfile}',f'../BuoyData/LEVEL2/{theurlfile}')
-
-# # convert to something we can plot, using pandas
-# def PGraw2panda(bid):
-#     UpTempOpath = '/Volumes/GoogleDrive/My Drive/SASSIE/BuoyData'
-#     rawfile = f'UpTempOLatest_{bid}.csv'
-#     if os.path.exists(f'{UpTempOpath}/{rawfile}'):
-#         df = pd.read_csv(f'{UpTempOpath}/{rawfile}')
-#         hdict = HC.PG_HeaderCodes(df.columns)
-#         df.rename(columns=hdict,inplace=True)
-
-#         fvars=['Date','Lat','Lon']
-#         for name in df.columns:
-#             if name.startswith('P') and not name.startswith('Pod'):
-#                 fvars.append(name)
-#             if name.startswith('D') and not name.startswith('Dat') and not name.startswith('Device'):
-#                 fvars.append(name)
-#             if name.startswith('T') and not name.startswith('Tilt'):
-#                 fvars.append(name)
-#             if name.startswith('S') and not name.startswith('SUB') and not name.startswith('Sec'):
-#                 fvars.append(name)
-#             if name.startswith('CTD'):
-#                 fvars.append(name)
-#         for col in df.columns:
-#             if col not in fvars:
-#                 df = df.drop(col,1)
-#         # reverse order, oldest at the top
-#         df = df.iloc[::-1]  # or to reindex  df = df.reindex(index=df.index[::-1])
-#         return df
-#     else:
-#         return None
-
-# def LEVEL2toPanda(bid):
-#     binf = BM.BuoyMaster(bid)
-
-#     UpTempOpath = '/Volumes/GoogleDrive/My Drive/SASSIE/BuoyData/LEVEL2'
-#     L2file = f"UTO_{binf['name'][0]}-{binf['name'][1].zfill(2)}_{bid}_L2.dat"
-
-#     if os.path.exists(f'{UpTempOpath}/{L2file}'):
-# baseheader ={'year':'Year',         # key from Level 1, value from ProcessedRaw and used here
-#              'month':'Month',
-#              'day':'Day',
-#              'hour':'Hour',
-#              'Latitude':'Lat',
-#              'Longitude':'Lon'}
-# columns = ['Year','Month','Day','Hour','Lat','Lon']
-
-
-
-#         df = pd.read_csv(f'{UpTempOpath}/{rawfile}')
-#         hdict = HC.PG_HeaderCodes(df.columns)
-#         df.rename(columns=hdict,inplace=True)
-
-#         fvars=['Date','Lat','Lon']
-#         for name in df.columns:
-#             if name.startswith('P') and not name.startswith('Pod'):
-#                 fvars.append(name)
-#             if name.startswith('D') and not name.startswith('Dat') and not name.startswith('Device'):
-#                 fvars.append(name)
-#             if name.startswith('T') and not name.startswith('Tilt'):
-#                 fvars.append(name)
-#             if name.startswith('S') and not name.startswith('SUB') and not name.startswith('Sec'):
-#                 fvars.append(name)
-#             if name.startswith('CTD'):
-#                 fvars.append(name)
-#         for col in df.columns:
-#             if col not in fvars:
-#                 df = df.drop(col,1)
-#         # reverse order, oldest at the top
-#         df = df.iloc[::-1]  # or to reindex  df = df.reindex(index=df.index[::-1])
-#         return df
-#     else:
-#         return None
-
 def getSWIFT(args,ID,starttime,endtime,eng):
     # eng = matlab.engine.start_matlab()
     # eng.addpath('../swift_telemetry')
@@ -632,65 +501,153 @@ def getSWIFT(args,ID,starttime,endtime,eng):
     if endtime=='':
         swiftfile = f'buoy-SWIFT {ID}-start-{starttime}-end-None.mat'
     filecsv = f'{swiftpath}/csv/{os.path.splitext(swiftfile)[0]}.csv'
-    swift_struct = sio.loadmat(f'{swiftpath}/{swiftfile}')
-    SWIFT = swift_struct['SWIFT']
+    try:
+        swift_struct = sio.loadmat(f'{swiftpath}/{swiftfile}')
+        SWIFT = swift_struct['SWIFT']
 
-    buoyid = np.array([item for item in chain(*SWIFT[0,:]['ID'])])
-    buoyid = np.array([item.split(' ')[-1] for item in buoyid])
-    # buoydate = np.array([jtem for jtem in chain(*[item.tolist() for item in chain(*SWIFT[0,:]['date'])])])
-    # print('min buoydate',np.min(np.int(buoydate)))
+        buoyid = np.array([item for item in chain(*SWIFT[0,:]['ID'])])
+        buoyid = np.array([item.split(' ')[-1] for item in buoyid])
+        # buoydate = np.array([jtem for jtem in chain(*[item.tolist() for item in chain(*SWIFT[0,:]['date'])])])
+        # print('min buoydate',np.min(np.int(buoydate)))
 
-    CTdepth = np.array([jtem for jtem in chain(*[item.tolist() for item in chain(*SWIFT[0,:]['CTdepth'])])])
-    # CTdepth[buoydate==0]
-    unique, counts = np.unique(CTdepth, return_counts=True)
-    baddepth = unique[counts<10]
-    ndepths = len(unique[counts>10])
+        CTdepth = np.array([jtem for jtem in chain(*[item.tolist() for item in chain(*SWIFT[0,:]['CTdepth'])])])
+        # CTdepth[buoydate==0]
+        unique, counts = np.unique(CTdepth, return_counts=True)
+        baddepth = unique[counts<10]
+        ndepths = len(unique[counts>10])
 
-    # variables come in as list of arrays of nested lists, where each array has one value.
-    lon = np.array([jtem for jtem in chain(*[item.tolist() for item in chain(*SWIFT[0,:]['lon'])])])
-    lat = np.array([jtem for jtem in chain(*[item.tolist() for item in chain(*SWIFT[0,:]['lat'])])])
+        # variables come in as list of arrays of nested lists, where each array has one value.
+        lon = np.array([jtem for jtem in chain(*[item.tolist() for item in chain(*SWIFT[0,:]['lon'])])])
+        lat = np.array([jtem for jtem in chain(*[item.tolist() for item in chain(*SWIFT[0,:]['lat'])])])
 
-    salinity = np.array([jtem for jtem in chain(*[item.tolist() for item in chain(*SWIFT[0,:]['salinity'])])])
-    salinity = salinity[CTdepth!=baddepth]
-    salinity = np.reshape(salinity,(-1,ndepths))
-    salinity[salinity<22] = np.nan
+        salinity = np.array([jtem for jtem in chain(*[item.tolist() for item in chain(*SWIFT[0,:]['salinity'])])])
+        salinity = salinity[CTdepth!=baddepth]
+        salinity = np.reshape(salinity,(-1,ndepths))
+        salinity[salinity<22] = np.nan
 
-    watertemp = np.array([jtem for jtem in chain(*[item.tolist() for item in chain(*SWIFT[0,:]['watertemp'])])])
-    watertemp = watertemp[CTdepth!=baddepth]
-    watertemp = np.reshape(watertemp,(-1,ndepths))
+        watertemp = np.array([jtem for jtem in chain(*[item.tolist() for item in chain(*SWIFT[0,:]['watertemp'])])])
+        watertemp = watertemp[CTdepth!=baddepth]
+        watertemp = np.reshape(watertemp,(-1,ndepths))
 
-    CTdepth = CTdepth[CTdepth!=baddepth]
-    CTdepth = np.reshape(CTdepth,(-1,ndepths))
+        CTdepth = CTdepth[CTdepth!=baddepth]
+        CTdepth = np.reshape(CTdepth,(-1,ndepths))
 
-    time = np.array([jtem for jtem in chain(*[item.tolist() for item in chain(*SWIFT[0,:]['time'])])])
-    # # # to check in matlab datevec(SWIFT(end).time)
-    datetime = [dt.datetime.fromordinal(int(t)) + dt.timedelta(t%1) - dt.timedelta(days=366) for t in time]
+        time = np.array([jtem for jtem in chain(*[item.tolist() for item in chain(*SWIFT[0,:]['time'])])])
+        # # # to check in matlab datevec(SWIFT(end).time)
+        datetime = [dt.datetime.fromordinal(int(t)) + dt.timedelta(t%1) - dt.timedelta(days=366) for t in time]
 
-    columns = ['DateTime','Lat','Lon','BuoyID']
-    [columns.append(f'CTdepth-{ii}') for ii in range(ndepths)]
-    [columns.append(f'Salinity-{ii}') for ii in range(ndepths)]
-    [columns.append(f'WaterTemp-{ii}') for ii in range(ndepths)]
-    # print(columns)
+        columns = ['DateTime','Lat','Lon','BuoyID']
+        [columns.append(f'CTdepth-{ii}') for ii in range(ndepths)]
+        [columns.append(f'Salinity-{ii}') for ii in range(ndepths)]
+        [columns.append(f'WaterTemp-{ii}') for ii in range(ndepths)]
+        # print(columns)
 
-    # create dataFrame
-    dfSwift = pd.DataFrame(columns=columns)
+        # create dataFrame
+        dfSwift = pd.DataFrame(columns=columns)
 
-    # fill dataFrame
-    dfSwift['DateTime'] = datetime
-    dfSwift['DateTime'] = dfSwift['DateTime'].dt.round('1s')
-    # dfSwift['DateTimeStr'] = dfSwift['DateTime'].dt.strftime('%d/%m/%Y %H:%M:%S')
-    dfSwift['Lat'] = lat
-    dfSwift['Lon'] = lon
-    dfSwift['BuoyID'] = buoyid
-    # reduce to three decimals
-    dfSwift['Lat'] = dfSwift['Lat'].map('{:.03f}'.format).astype(float)
-    dfSwift['Lon'] = dfSwift['Lon'].map('{:.03f}'.format).astype(float)
-    for ii in range(ndepths):
-        dfSwift[f'CTdepth-{ii}'] = CTdepth[:,ii]
-        dfSwift[f'Salinity-{ii}'] = salinity[:,ii]
-        dfSwift[f'WaterTemp-{ii}'] = watertemp[:,ii]
+        # fill dataFrame
+        dfSwift['DateTime'] = datetime
+        dfSwift['DateTime'] = dfSwift['DateTime'].dt.round('1s')
+        # dfSwift['DateTimeStr'] = dfSwift['DateTime'].dt.strftime('%d/%m/%Y %H:%M:%S')
+        dfSwift['Lat'] = lat
+        dfSwift['Lon'] = lon
+        dfSwift['BuoyID'] = buoyid
         # reduce to three decimals
-        dfSwift[f'Salinity-{ii}'] = dfSwift[f'Salinity-{ii}'].map('{:.03f}'.format).astype(float)
-        dfSwift[f'WaterTemp-{ii}'] = dfSwift[f'WaterTemp-{ii}'].map('{:.03f}'.format).astype(float)
+        dfSwift['Lat'] = dfSwift['Lat'].map('{:.03f}'.format).astype(float)
+        dfSwift['Lon'] = dfSwift['Lon'].map('{:.03f}'.format).astype(float)
+        for ii in range(ndepths):
+            dfSwift[f'CTdepth-{ii}'] = CTdepth[:,ii]
+            dfSwift[f'Salinity-{ii}'] = salinity[:,ii]
+            dfSwift[f'WaterTemp-{ii}'] = watertemp[:,ii]
+            # reduce to three decimals
+            dfSwift[f'Salinity-{ii}'] = dfSwift[f'Salinity-{ii}'].map('{:.03f}'.format).astype(float)
+            dfSwift[f'WaterTemp-{ii}'] = dfSwift[f'WaterTemp-{ii}'].map('{:.03f}'.format).astype(float)
+    except:
+        dfSwift = pd.DataFrame(columns=['DateTime','Lat','Lon','WaterTemp-0','Salinity-0'])
 
     return dfSwift
+
+def getWaveGlider(args,ID):
+    # login information
+    wsdl            = "https://dataservice.wgms.com/WDS/WGMSData.asmx?wsdl" # Data Service WSDL URL
+    org             = "apl-uw"                                               # WGMS Org
+    user            = "sdickins"                                      # WGMS Org user
+    password        = "$ASSIE"                                          # WGMS Org Password
+    resultFormat    = 1                                                     # Default Option
+
+    # date time strings
+    now = dt.datetime.now()
+    then = now - dt.timedelta(hours=args.hourstoPlot) # 48)
+    endDate = now.strftime('%Y-%m-%dT%H:%M:%S')
+    startDate = then.strftime('%Y-%m-%dT%H:%M:%S')
+
+    for reportName in ['"AanderraaCT Sensor"','"GPS Waves Sensor Data"']:
+        print(reportName)
+        print(ID)
+
+        cmd = f'python {args.base_dir}/pyfiles/DataService.py --getReportData --vehicles {np.int(ID)} --startDate {startDate}Z --endDate {endDate}Z --reportName {reportName}'
+        p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        # waits until p ends and saves output and errors if needed
+        out, err = p.communicate()  # both strings
+
+        if str(err, 'utf-8') != '':
+            print(f'Error in WaveGlider data retrieval, {dt.datetime.now()} Z: {str(err, "utf-8")}')
+            dfWaveGlider = None
+            break
+
+        if "AanderraaCT Sensor" in reportName:
+            dataAS = list(eval(out))   # a string that is a list of dicts
+            dfAS = pd.DataFrame([item['timeStamp'],item['temperature (C)'],item['salinity (PSU)']] for item in dataAS)
+            dfAS.columns=['TimeStamp','Temperature','Salinity']
+            dfAS['DateTime'] = [dt.datetime.strptime(item,'%Y-%m-%dT%H:%M:%S') for item in dfAS['TimeStamp']]
+            # print(dfAS.head())
+        elif "Telemetry 6 Report" in reportName:
+            dataT6 = json.loads(out)   # a string that json converts to dictionary
+            dfT6 = pd.DataFrame([item['gliderTimeStamp'],item['latitude'],item['longitude']] for item in dataT6['recordData'])
+            dfT6.columns=['GliderTimeStamp','Latitude','Longitude']
+            dfT6['GliderDateTime'] = [dt.datetime.strptime(item,'%Y-%m-%dT%H:%M:%S') for item in dfT6['GliderTimeStamp']]
+            # print(dfT6.head())
+        elif "GPS Waves Sensor Data" in reportName:
+            dataGPS = list(eval(out))   # a string that is a list of dicts
+            dfGPS = pd.DataFrame([item['timeStamp'],item['latitude'],item['longitude']] for item in dataGPS)
+            dfGPS.columns=['GPSTimeStamp','Latitude','Longitude']
+            dfGPS['GPSDateTime'] = [dt.datetime.strptime(item,'%Y-%m-%dT%H:%M:%S') for item in dfGPS['GPSTimeStamp']]
+            dfGPS['Latitude'] = dfGPS['Latitude'].astype(float)   # comes as type object, eye roll
+            dfGPS['Longitude'] = dfGPS['Longitude'].astype(float)
+            # print(dfGPS.head())
+
+    # convert panda series to something scipy.interpolate can use
+    secondsSinceAS = (dfAS['DateTime'] - dt.datetime(2022,8,1)).to_numpy() / np.timedelta64(1,'s')  #1e9)  # seconds since
+    secondsSinceGPS = (dfGPS['GPSDateTime'] - dt.datetime(2022,8,1)).to_numpy() / np.timedelta64(1,'s')
+
+    fi = interpolate.interp1d(secondsSinceAS, dfAS['Temperature'], fill_value='extrapolate')
+    dfGPS['Temperature'] = fi(secondsSinceGPS)
+    fi = interpolate.interp1d(secondsSinceAS, dfAS['Salinity'], fill_value='extrapolate')
+    dfGPS['Salinity'] = fi(secondsSinceGPS)
+
+    # print(dfGPS['GPSDateTime'].dtype)
+    # print(dfGPS['Latitude'].dtype)
+    # print(dfGPS['Longitude'].dtype)
+    # print(dfGPS['Temperature'].dtype)
+    # print(dfGPS['Salinity'].dtype)
+
+    dfWaveGlider = pd.DataFrame()
+    # dfWaveGlider['index']
+    dfWaveGlider['Date'] = dfGPS['GPSTimeStamp']
+    dfWaveGlider['Lat'] = dfGPS['Latitude'].map('{:.03f}'.format).astype(float)
+    dfWaveGlider['Lon'] = dfGPS['Longitude'].map('{:.03f}'.format).astype(float)
+    dfWaveGlider['Temperature'] = dfGPS['Temperature'].map('{:.03f}'.format).astype(float)
+    dfWaveGlider['Salinity'] = dfGPS['Salinity'].map('{:.03f}'.format).astype(float)
+    # print(dfWaveGlider.head())
+
+    # fig,ax = plt.subplots(1,1,figsize=(6,3))
+    # ax.plot(dfAS['DateTime'],dfAS['Temperature'],'r.')
+    # ax.plot(dfGPS['GPSDateTime'],dfGPS['Temperature'],'b.')
+    # ax.set_title('ACT temperature (b), interpolated to GPS (r)')
+    #
+    # fig,ax = plt.subplots(1,1,figsize=(6,3))
+    # ax.plot(dfAS['DateTime'],dfAS['Salinity'],'r.')
+    # ax.plot(dfGPS['GPSDateTime'],dfGPS['Salinity'],'b.')
+    # ax.set_title('ACT salinity (b), interpolated to GPS (r)')
+
+    return dfWaveGlider

@@ -26,12 +26,12 @@ def plotSuite(args):
     extent=[int(item.strip()) for item in args.mapDomain.split(',')]
 
     # get the latest ship location for the plots (will show up as a red star)
-    if os.path.exists(f'{args.base_dir}/Ship_track.xlsx'):
-        os.remove(f'{args.base_dir}/Ship_track.xlsx')  # I get an error if I try to overwrite. :(
-    os.system(f'/usr/local/bin/lftp sftp://sassie@ftp.polarscience.org/ --password 2Icy2Fresh! -e "cd /FTP/; get -e Ship_track.xlsx -o {args.base_dir}/Ship_track.xlsx; bye"')
-    dfship = pd.read_excel(f'{args.base_dir}/Ship_track.xlsx',header=None)
-    args.shipLon = dfship.iloc[-1][4]
-    args.shipLat = dfship.iloc[-1][3]
+    if os.path.exists(f'{args.base_dir}/Ship_track.csv'):
+        os.remove(f'{args.base_dir}/Ship_track.csv')  # I get an error if I try to overwrite. :(
+    os.system(f'/usr/local/bin/lftp sftp://sassie@ftp.polarscience.org/ --password 2Icy2Fresh! -e "cd /FTP/; get -e Ship_track.csv -o {args.base_dir}/Ship_track.csv; bye"')
+    dfship = pd.read_csv(f'{args.base_dir}/Ship_track.csv',header=None)
+    args.shipLon = dfship.iloc[-1][6]
+    args.shipLat = dfship.iloc[-1][5]
     print(f'ship location: {args.shipLat:.2f}N, {-1*args.shipLon:.2f}W')
 
     # make the base for the plots, one for Temperature, one for Salinity
@@ -65,10 +65,10 @@ def plotSuite(args):
        'T1':'Temperature',
        'WaterTemp-0':'Temperature'}
 
-    # loops through the buoy IDs
-    if bool(args.buoyIDS):
+    ##################################### DRIFTING BUOY DATA ###################
+    if bool(args.buoyIDs):
         # get buoy data
-        bids = [item.strip() for item in args.buoyIDS.split(',')]
+        bids = [item.strip() for item in args.buoyIDs.split(',')]
         buoyTpts=[]
         buoyTptsZ=[]
         buoySpts=[]
@@ -212,15 +212,15 @@ def plotSuite(args):
         for ii in range(len(bids)):
             leg.legendHandles[ii].set_color('k')
 
-    if bool(args.swiftIDS):
+    ##################################### SWIFT FLOAT DATA #####################
+    if bool(args.swiftIDs):
         # get swift data, this requires matlab
         eng = matlab.engine.start_matlab()
         eng.addpath(f'{args.base_dir}/swift_telemetry')
 
-        IDs = [item for item in args.swiftIDS.split(',')]  # '09', ,'13','15'  # matlab format with the semi colons
+        IDs = [item for item in args.swiftIDs.split(',')]  # '09', ,'13','15'  # matlab format with the semi colons
 
-        # startswift = today - dt.timedelta(hours=int(args.hourstoPlot))  #### we will this line when new data are available.
-        startswift = dt.datetime(2018,9,1)
+        startswift = today - dt.timedelta(hours=int(args.hourstoPlot))  #### we will this line when new data are available.
         starttime = f'{startswift.year}-{startswift.month:02d}-{startswift.day:02d}T00:00:00'
         endtime = ''    # leaving endtime blank, says get data up to present.
         print('SWIFT times',starttime,endtime)
@@ -264,8 +264,27 @@ def plotSuite(args):
                     else:
                         swiftSlabel=f"{ID} No SSS data."
             else:
-                swiftTlabel=f"SWIFT {ID} No lon/lat."
-                swiftSlabel=f"SWIFT {ID} No lon/lat."
+                dfSwift['WaterTemp-0'] = np.nan
+                # df['WaterTemp-0'] = np.nan
+                # df['WaterTemp-0'] = np.nan
+                swiftTlabel = f"{ID}: no temperature data"
+                swiftTpts.append(ax1.scatter(dfSwift['Lon'], dfSwift['Lat'], dfSwift['WaterTemp-0'], c=dfSwift['WaterTemp-0'],  # <- dummy vars
+                            cmap=cmap, norm=normsst, transform=ccrs.PlateCarree(),
+                            edgecolor='face', label=swiftTlabel))
+                swiftTptsZ.append(ax11.scatter(dfSwift['Lon'], dfSwift['Lat'], dfSwift['WaterTemp-0'], c=dfSwift['WaterTemp-0'],
+                            cmap=cmap, norm=normsst, transform=ccrs.PlateCarree(),
+                            edgecolor='face', label=swiftTlabel))
+
+                dfSwift['Salinity-0'] = np.nan
+                swiftSlabel = f"{ID}: no salinity data"
+                swiftSpts.append(ax1.scatter(dfSwift['Lon'], dfSwift['Lat'], dfSwift['Salinity-0'], c=dfSwift['Salinity-0'],  # <- dummy vars
+                            cmap=cmap, norm=normsst, transform=ccrs.PlateCarree(),
+                            edgecolor='face', label=swiftSlabel))
+                swiftSptsZ.append(ax11.scatter(dfSwift['Lon'], dfSwift['Lat'], dfSwift['Salinity-0'], c=dfSwift['Salinity-0'],
+                            cmap=cmap, norm=normsst, transform=ccrs.PlateCarree(),
+                            edgecolor='face', label=swiftSlabel))
+                # swiftTlabel=f"SWIFT {ID} No lon/lat."
+                # swiftSlabel=f"SWIFT {ID} No lon/lat."
 
             # reorder to descending dates for writing to ouput
             # dfSwift.sort_values(by='DateObj',ascending=False,inplace=True)
@@ -290,7 +309,7 @@ def plotSuite(args):
         # work the legends on the plots
         legend20 = ax0.legend(handles=swiftTpts,bbox_to_anchor=(1.1, 0.6), loc=2, borderaxespad=0.,fontsize=9,title='Swift Data' )
         frame20 = legend20.get_frame()
-        frame20.set_facecolor('lightblue')
+        frame20.set_facecolor('lightgray')
         frame20.set_edgecolor('black')
         leg = ax0.get_legend()
         for ii in range(len(IDs)):
@@ -298,7 +317,7 @@ def plotSuite(args):
 
         legend120 = ax10.legend(handles=swiftTpts,bbox_to_anchor=(1.1, 0.5), loc=2, borderaxespad=0.,fontsize=9,title='Swift Data' )
         frame20 = legend120.get_frame()
-        frame20.set_facecolor('lightblue')
+        frame20.set_facecolor('lightgray')
         frame20.set_edgecolor('black')
         leg = ax10.get_legend()
         for ii in range(len(IDs)):
@@ -306,7 +325,7 @@ def plotSuite(args):
 
         legend21 = ax1.legend(handles=swiftSpts,bbox_to_anchor=(1.1, 0.6), loc=2, borderaxespad=0.,fontsize=9,title='Swift Data' )
         frame21 = legend21.get_frame()
-        frame21.set_facecolor('lightblue')
+        frame21.set_facecolor('lightgray')
         frame21.set_edgecolor('black')
         leg = ax1.get_legend()
         for ii in range(len(IDs)):
@@ -314,28 +333,131 @@ def plotSuite(args):
 
         legend121 = ax11.legend(handles=swiftSpts,bbox_to_anchor=(1.1, 0.5), loc=2, borderaxespad=0.,fontsize=9,title='Swift Data' )
         frame21 = legend121.get_frame()
-        frame21.set_facecolor('lightblue')
+        frame21.set_facecolor('lightgray')
         frame21.set_edgecolor('black')
         leg = ax11.get_legend()
         for ii in range(len(IDs)):
             leg.legendHandles[ii].set_color('k')
 
-    if bool(args.buoyIDS):
+    ##################################### WAVE GLIDER DATA #####################
+    if bool(args.gliderIDs):
+        IDdict = {'102740746':  "SV3-130",
+                  '84929357':   "SV3-153",
+                  '1628052144': "SV3-245",
+                  '511512553':  "SV3-247"}
+        waveGliderTpts=[]
+        waveGliderTptsZ=[]
+        waveGliderSpts=[]
+        waveGliderSptsZ=[]
+
+        IDs = [item for item in args.gliderIDs.split(',')]
+        for ID in IDs:
+            print(ID)
+            print(IDdict[ID])
+            dfwaveGlider = pfields.getWaveGlider(args,ID)
+            dfwaveGlider.reset_index(inplace=True)  # used for plotting
+            print('line 327 Glider ID:',ID)
+            print(dfwaveGlider.head())
+
+            columnsWrite = ['Date','Lat','Lon','Temperature','Salinity']
+
+            if not dfwaveGlider['Lon'].isnull().all():
+                if not dfwaveGlider['Temperature'].isnull().all():
+                    waveGliderTlabel=f"{IDdict[ID]}: {dfwaveGlider['Temperature'].iloc[-1]:.1f}{degree}C, {dfwaveGlider['Lon'].iloc[-1]:.2f}W, {dfwaveGlider['Lat'].iloc[-1]:.2f}N"
+                    waveGliderTpts.append(ax0.scatter(dfwaveGlider['Lon'], dfwaveGlider['Lat'], dfwaveGlider['index'], dfwaveGlider['Temperature'],
+                               cmap=cmap, norm=normsst, marker='D', edgecolor='face',transform=ccrs.PlateCarree(), label=waveGliderTlabel))
+                    if args.smallDomain is not None:
+                        waveGliderTptsZ.append(ax10.scatter(dfwaveGlider['Lon'], dfwaveGlider['Lat'], dfwaveGlider['index'], dfwaveGlider['Temperature'],
+                                   cmap=cmap, norm=normsst, marker='D', edgecolor='face',transform=ccrs.PlateCarree(), label=waveGliderTlabel))
+                else:
+                    waveGliderTlabel=f"{IDdict[ID]} No SST data."
+
+                if not dfwaveGlider['Salinity'].isnull().all():
+                    waveGliderSlabel=f"{IDdict[ID]}: {dfwaveGlider['Salinity'].iloc[-1]:.2f} {dfwaveGlider['Lon'].iloc[-1]:.2f}W, {dfwaveGlider['Lat'].iloc[-1]:.2f}N"
+                    waveGliderSpts.append(ax1.scatter(dfwaveGlider['Lon'], dfwaveGlider['Lat'],dfwaveGlider['index'],dfwaveGlider['Salinity'],
+                               cmap=cmap, norm=normsss, marker='D', edgecolor='face',transform=ccrs.PlateCarree(), label=waveGliderSlabel))
+                    if args.smallDomain is not None:
+                        waveGliderSptsZ.append(ax11.scatter(dfwaveGlider['Lon'], dfwaveGlider['Lat'],dfwaveGlider['index'],dfwaveGlider['Salinity'],
+                                   cmap=cmap, norm=normsss, marker='D', edgecolor='face',transform=ccrs.PlateCarree(), label=waveGliderSlabel))
+                else:
+                    waveGliderSlabel=f"{IDdict[ID]} No SSS data."
+            else:
+                waveGliderTlabel=f"WaveGlider {IDdict[ID]} No lon/lat."
+                waveGliderSlabel=f"WaveGlider {IDdict[ID]} No lon/lat."
+
+            dfwaveGliderNew = dfwaveGlider[columnsWrite]
+            # dfswiftNew.rename(columns=outHeaders,inplace=True)
+            # need to made Date a string for .csv ?
+            # sheetname = f'Swift{ID}'
+            # dfSwiftWrite.to_excel(writer, sheet_name=sheetname)
+
+            # # write/append data to csv file
+            gliderFile = f'{args.base_dir}/WaveGlider_{IDdict[ID]}.csv'
+            if os.path.exists(gliderFile):
+                dfwaveGliderPrev = pd.read_csv(gliderFile)
+                dfwaveGliderPrev = pd.concat([dfwaveGliderPrev,dfwaveGliderNew],axis=0,ignore_index=True)
+                dfwaveGliderPrev.drop_duplicates(inplace=True)
+                dfwaveGliderPrev.to_csv(gliderFile,index=False)
+            else:
+                dfwaveGliderNew.to_csv(gliderFile,float_format='%.3f',index=False)
+
+        # work the legends on the plots
+        legend30 = ax0.legend(handles=waveGliderTpts,bbox_to_anchor=(1.1, 0.3), loc=2, borderaxespad=0.,fontsize=9,title='WaveGlider Data' )
+        frame30 = legend30.get_frame()
+        frame30.set_facecolor('lightgray')
+        frame30.set_edgecolor('black')
+        leg = ax0.get_legend()
+        for ii in range(len(IDs)):
+            leg.legendHandles[ii].set_color('k')
+
+        legend130 = ax10.legend(handles=waveGliderTpts,bbox_to_anchor=(1.1, 0.2), loc=2, borderaxespad=0.,fontsize=9,title='WaveGlider Data' )
+        frame30 = legend130.get_frame()
+        frame30.set_facecolor('lightgray')
+        frame30.set_edgecolor('black')
+        leg = ax10.get_legend()
+        for ii in range(len(IDs)):
+            leg.legendHandles[ii].set_color('k')
+
+        legend31 = ax1.legend(handles=waveGliderSpts,bbox_to_anchor=(1.1, 0.3), loc=2, borderaxespad=0.,fontsize=9,title='WaveGlider Data' )
+        frame31 = legend31.get_frame()
+        frame31.set_facecolor('lightgray')
+        frame31.set_edgecolor('black')
+        leg = ax1.get_legend()
+        for ii in range(len(IDs)):
+            leg.legendHandles[ii].set_color('k')
+
+        legend131 = ax11.legend(handles=waveGliderSpts,bbox_to_anchor=(1.1, 0.2), loc=2, borderaxespad=0.,fontsize=9,title='WaveGlider Data' )
+        frame31 = legend131.get_frame()
+        frame31.set_facecolor('lightgray')
+        frame31.set_edgecolor('black')
+        leg = ax11.get_legend()
+        for ii in range(len(IDs)):
+            leg.legendHandles[ii].set_color('k')
+
+
+    # need to re-apply legends as it only does the lastest
+    if bool(args.buoyIDs):
         ax0.add_artist(legend10) # UTO legend: need to add legends back, as by default only last legend is shown
         ax10.add_artist(legend110)
-    if bool(args.swiftIDS):
+    if bool(args.swiftIDs):
         ax0.add_artist(legend20) # swift legend
         ax10.add_artist(legend120)
+    if bool(args.gliderIDs):
+        ax0.add_artist(legend30) # waveglider legend
+        ax10.add_artist(legend130)
     fig0.savefig(figstr0)
     fig10.savefig(figstr10)
 
 
-    if bool(args.buoyIDS):
+    if bool(args.buoyIDs):
         ax1.add_artist(legend11) # UTO legend
         ax11.add_artist(legend111)
-    if bool(args.swiftIDS):
+    if bool(args.swiftIDs):
         ax1.add_artist(legend21) # swift legend
         ax11.add_artist(legend121)
+    if bool(args.gliderIDs):
+        ax1.add_artist(legend31) # swift legend
+        ax11.add_artist(legend131)
     fig1.savefig(figstr1)
     fig11.savefig(figstr11)
 
@@ -343,7 +465,9 @@ def plotSuite(args):
     os.system(f'/usr/local/bin/lftp sftp://sassie@ftp.polarscience.org/ --password 2Icy2Fresh! -e "cd /FTP/insitu/images/; put {figstr0};put {figstr10};put {figstr1};put {figstr11}; bye"')
 
     # send the data files (csv) to the ftp site
-    os.system(f'/usr/local/bin/lftp sftp://sassie@ftp.polarscience.org/ --password 2Icy2Fresh! -e "cd /FTP/insitu/data/; mput *.csv; bye"')
+    os.system(f'/usr/local/bin/lftp sftp://sassie@ftp.polarscience.org/ --password 2Icy2Fresh! -e "cd /FTP/insitu/data/; mput UTO_*.csv; bye"')
+    os.system(f'/usr/local/bin/lftp sftp://sassie@ftp.polarscience.org/ --password 2Icy2Fresh! -e "cd /FTP/insitu/data/; mput Swift*.csv; bye"')
+    os.system(f'/usr/local/bin/lftp sftp://sassie@ftp.polarscience.org/ --password 2Icy2Fresh! -e "cd /FTP/insitu/data/; mput Wave*.csv; bye"')
         # plt.show(block=False)
         # plt.pause(0.001)
         # input('Press enter to close figures.')
@@ -373,13 +497,18 @@ if __name__=='__main__':
     #                                                       '\t JPL-L2B-NRT \n'
     #                                                       '\t JPL-L2B-del \n'  <- we're using this one. Not sure if it's actually 'delayed'
     #                                                       '\t these have not all been tested')
-    parser.add_argument('--buoyIDS', type=str, help='list of 15-digit UpTempO buoy IDs. Options: \n'
+    parser.add_argument('--buoyIDs', type=str, help='list of 15-digit UpTempO buoy IDs. Options: \n'
                                                    '\t 300534060649670 (2021-01) \n'
                                                    '\t 300534062158480 (2021-04)')
-    parser.add_argument('--swiftIDS', type=str, help='list of 2-digit Swift buoy IDs. Options: \n'
+    parser.add_argument('--swiftIDs', type=str, help='list of 2-digit Swift float IDs. Options: \n'
                                                    '\t 09 \n'
                                                    '\t 13 \n'
                                                    '\t 15')
+    parser.add_argument('--gliderIDs', type=str, help='list of Wave Glider IDs. Options: \n'
+                                                   '\t 102740746  (SV3-130) \n'
+                                                   '\t 84929357   (SV3-153) \n'
+                                                   '\t 1628052144 (SV3-245) \n'
+                                                   '\t 511512553  (SV3-247)')
     parser.add_argument('--hourstoPlot', type=int, help='plot data this number of hours leading up to latest')
 
     args, unknown = parser.parse_known_args()
