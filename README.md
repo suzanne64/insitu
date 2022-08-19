@@ -8,6 +8,9 @@ Edit the input_args_SASSIE.txt file, changing the --base_dir to your directory.
 You’ll need subdirectories under the base_dir: 
 BuoyData/, SatelliteFields/, excel_files/, figs/, pyfiles/, swift_telemetry/, waveGlider/
 	under SatelliteFields/ you’ll need Bremen_SIC/, NOAA_SST/, JPL_SMAP/
+	
+WaveGlider server relies on the time zone of the local computer. Change the time zone
+on your computer to UTC (British Summer) for the duration of the SASSIE experiment.
 
 Setup a cron job to run the code every three hours. In your terminal window
 
