@@ -6,7 +6,7 @@ Clone this repository.
 
 Edit the input_args_SASSIE.txt file, changing the --base_dir to your directory. 
 You’ll need subdirectories under the base_dir: 
-BuoyData/, SatelliteFields/, excel_files/, figs/, pyfiles/, swift_telemetry/, waveGlider/
+BuoyData/, SatelliteFields/, csv/, figs/, pyfiles/, swift_telemetry/, waveGlider/
 	under SatelliteFields/ you’ll need Bremen_SIC/, NOAA_SST/, JPL_SMAP/
 	
 WaveGlider server relies on the time zone of the local computer. Change the time zone
