@@ -12,6 +12,22 @@ BuoyData/, SatelliteFields/, csv/, figs/, pyfiles/, swift_telemetry/, waveGlider
 WaveGlider server relies on the time zone of the local computer. Change the time zone
 on your computer to UTC (British Summer) for the duration of the SASSIE experiment.
 
+A cron command has five arguments at the begging:
+1. which minutes to run on    * means all
+2. whih hours to run on
+3 which days to run on
+4. what months to run on       i think.
+5. what day of week
+
+Where all time is local.
+
+examples:
+0 */3 * * *
+would 3:00, 6:00, 9:00, ... every day
+
+For test running I would use. something like
+*/5 * * * *        which runs every 5 mins on the 5s
+
 Setup a cron job to run the code every three hours. In your terminal window
 
 1. type crontab -e		(opens a vi editor window)
@@ -23,7 +39,11 @@ Setup a cron job to run the code every three hours. In your terminal window
 5. type :wq		(saves the file)
 6. press enter		(closes the vi window)
 
-Explanation of crontab line:
+To stop a cron job, remove it with 
+crontab -r
+
+
+ More explanation of crontab line:
 * '0'	run job first minute of the hour
 * '*/3'	run job every third hour
 * '*'	run every day
