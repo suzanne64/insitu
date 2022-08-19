@@ -39,8 +39,8 @@ Setup a cron job to run the code every three hours. In your terminal window
 5. type :wq		(saves the file)
 6. press enter		(closes the vi window)
 
-To stop a cron job, remove it with 
-crontab -r
+To stop a cron job, remove it with crontab -r
+To view a cron job, list it with crontab -l
 
 
  More explanation of crontab line:
