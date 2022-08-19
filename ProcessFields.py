@@ -52,8 +52,11 @@ def getICE(args,nors='n'):
 
         request = urllib.request.Request(theurl)
         request.get_method = lambda: 'HEAD'
-        urllib.request.urlopen(request)
-        urllib.request.urlretrieve(theurl,ncpath)
+        try:
+            urllib.request.urlopen(request)
+            urllib.request.urlretrieve(theurl,ncpath)
+        except:
+            pass
 
         if os.path.exists(ncpath):
             ncdata=nc.Dataset(ncpath)
@@ -577,9 +580,15 @@ def getWaveGlider(args,ID):
 
     # date time strings
     now = dt.datetime.now()
-    then = now - dt.timedelta(hours=args.hourstoPlot) # 48)
+    then = now - dt.timedelta(hours=args.hourstoPlot)
     endDate = now.strftime('%Y-%m-%dT%H:%M:%S')
     startDate = then.strftime('%Y-%m-%dT%H:%M:%S')
+    # if want data from beginning
+    # if ID == '102740746' or ID == '84929357':
+    #     startDate = '2022-08-14T19:00:00'
+    # elif ID == '1628052144' or ID == '511512553':
+    #     startDate = '2022-08-12T22:00:00'
+    print('line 589 in pfields',ID,startDate,endDate)
 
     for reportName in ['"AanderraaCT Sensor"','"GPS Waves Sensor Data"']:
         print(reportName)
@@ -590,54 +599,72 @@ def getWaveGlider(args,ID):
         # waits until p ends and saves output and errors if needed
         out, err = p.communicate()  # both strings
 
-        if str(err, 'utf-8') != '':
-            print(f'Error in WaveGlider data retrieval, {dt.datetime.now()} Z: {str(err, "utf-8")}')
-            dfWaveGlider = None
-            break
-
         if "AanderraaCT Sensor" in reportName:
-            dataAS = list(eval(out))   # a string that is a list of dicts
-            dfAS = pd.DataFrame([item['timeStamp'],item['temperature (C)'],item['salinity (PSU)']] for item in dataAS)
-            dfAS.columns=['TimeStamp','Temperature','Salinity']
-            dfAS['DateTime'] = [dt.datetime.strptime(item,'%Y-%m-%dT%H:%M:%S') for item in dfAS['TimeStamp']]
-            # print(dfAS.head())
+            if str(err, 'utf-8') == '':
+                dataAS = list(eval(out))   # a string that is a list of dicts
+                dfAS = pd.DataFrame([item['timeStamp'],item['temperature (C)'],item['salinity (PSU)']] for item in dataAS)
+                dfAS.columns=['TimeStamp','Temperature','Salinity']
+                print(dfAS['TimeStamp'].tail(20))
+                dfAS['DateTime'] = [dt.datetime.strptime(item,'%Y-%m-%dT%H:%M:%S') for item in dfAS['TimeStamp']]
+            else:
+                print(f'Error in AanderraaCT data retrieval, {dt.datetime.now()} Z: {str(err, "utf-8")}')
+                print(err)
+                dfAS = pd.DataFrame(columns=['TimeStamp','Temperature','Salinity'])
+
         elif "Telemetry 6 Report" in reportName:
-            dataT6 = json.loads(out)   # a string that json converts to dictionary
-            dfT6 = pd.DataFrame([item['gliderTimeStamp'],item['latitude'],item['longitude']] for item in dataT6['recordData'])
-            dfT6.columns=['GliderTimeStamp','Latitude','Longitude']
-            dfT6['GliderDateTime'] = [dt.datetime.strptime(item,'%Y-%m-%dT%H:%M:%S') for item in dfT6['GliderTimeStamp']]
-            # print(dfT6.head())
+            if str(err, 'utf-8') == '':
+                dataT6 = json.loads(out)   # a string that json converts to dictionary
+                dfT6 = pd.DataFrame([item['gliderTimeStamp'],item['latitude'],item['longitude']] for item in dataT6['recordData'])
+                dfT6.columns=['GliderTimeStamp','Latitude','Longitude']
+                dfT6['GliderDateTime'] = [dt.datetime.strptime(item,'%Y-%m-%dT%H:%M:%S') for item in dfT6['GliderTimeStamp']]
+            else:
+                print(f'Error in Telemetry 6 data retrieval, {dt.datetime.now()} Z: {str(err, "utf-8")}')
+                print(err)
+                dfT6 = pd.DataFrame(columns=['GliderTimeStamp','Latitude','Longitude'])
+
         elif "GPS Waves Sensor Data" in reportName:
-            dataGPS = list(eval(out))   # a string that is a list of dicts
-            dfGPS = pd.DataFrame([item['timeStamp'],item['latitude'],item['longitude']] for item in dataGPS)
-            dfGPS.columns=['GPSTimeStamp','Latitude','Longitude']
-            dfGPS['GPSDateTime'] = [dt.datetime.strptime(item,'%Y-%m-%dT%H:%M:%S') for item in dfGPS['GPSTimeStamp']]
-            dfGPS['Latitude'] = dfGPS['Latitude'].astype(float)   # comes as type object, eye roll
-            dfGPS['Longitude'] = dfGPS['Longitude'].astype(float)
-            # print(dfGPS.head())
+            if str(err, 'utf-8') == '':
+                dataGPS = list(eval(out))   # a string that is a list of dicts
+                dfGPS = pd.DataFrame([item['timeStamp'],item['latitude'],item['longitude']] for item in dataGPS)
+                dfGPS.columns=['GPSTimeStamp','Latitude','Longitude']
+                print(dfGPS['GPSTimeStamp'].tail(20))
+                # exit(-1)
+
+                dfGPS['GPSDateTime'] = [dt.datetime.strptime(item,'%Y-%m-%dT%H:%M:%S') for item in dfGPS['GPSTimeStamp']]
+                dfGPS['Latitude'] = dfGPS['Latitude'].astype(float)   # comes as type object, eye roll
+                dfGPS['Longitude'] = dfGPS['Longitude'].astype(float)
+            else:
+                print(f'Error in GPS Waves data retrieval, {dt.datetime.now()} Z: {str(err, "utf-8")}')
+                print(err)
+                dfAS = pd.DataFrame(columns=['GPSTimeStamp','Latitude','Longitude'])
+
+                # print(dfGPS.head())
 
     # convert panda series to something scipy.interpolate can use
-    secondsSinceAS = (dfAS['DateTime'] - dt.datetime(2022,8,1)).to_numpy() / np.timedelta64(1,'s')  #1e9)  # seconds since
-    secondsSinceGPS = (dfGPS['GPSDateTime'] - dt.datetime(2022,8,1)).to_numpy() / np.timedelta64(1,'s')
+    try:
+        secondsSinceAS = (dfAS['DateTime'] - dt.datetime(2022,8,1)).to_numpy() / np.timedelta64(1,'s')  #1e9)  # seconds since
+    except:
+        secondsSinceAS = None
+    try:
+        secondsSinceGPS = (dfGPS['GPSDateTime'] - dt.datetime(2022,8,1)).to_numpy() / np.timedelta64(1,'s')
+    except:
+        secondsSinceGPS = None
 
-    fi = interpolate.interp1d(secondsSinceAS, dfAS['Temperature'], fill_value='extrapolate')
-    dfGPS['Temperature'] = fi(secondsSinceGPS)
-    fi = interpolate.interp1d(secondsSinceAS, dfAS['Salinity'], fill_value='extrapolate')
-    dfGPS['Salinity'] = fi(secondsSinceGPS)
+    if secondsSinceAS is not None and secondsSinceGPS is not None:
+        fi = interpolate.interp1d(secondsSinceAS, dfAS['Temperature'], fill_value='extrapolate')
+        dfGPS['Temperature'] = fi(secondsSinceGPS)
+        fi = interpolate.interp1d(secondsSinceAS, dfAS['Salinity'], fill_value='extrapolate')
+        dfGPS['Salinity'] = fi(secondsSinceGPS)
 
-    # print(dfGPS['GPSDateTime'].dtype)
-    # print(dfGPS['Latitude'].dtype)
-    # print(dfGPS['Longitude'].dtype)
-    # print(dfGPS['Temperature'].dtype)
-    # print(dfGPS['Salinity'].dtype)
-
-    dfWaveGlider = pd.DataFrame()
-    # dfWaveGlider['index']
-    dfWaveGlider['Date'] = dfGPS['GPSTimeStamp']
-    dfWaveGlider['Lat'] = dfGPS['Latitude'].map('{:.03f}'.format).astype(float)
-    dfWaveGlider['Lon'] = dfGPS['Longitude'].map('{:.03f}'.format).astype(float)
-    dfWaveGlider['Temperature'] = dfGPS['Temperature'].map('{:.03f}'.format).astype(float)
-    dfWaveGlider['Salinity'] = dfGPS['Salinity'].map('{:.03f}'.format).astype(float)
+        dfWaveGlider = pd.DataFrame()
+        # dfWaveGlider['index']
+        dfWaveGlider['Date'] = dfGPS['GPSTimeStamp']
+        dfWaveGlider['Lat'] = dfGPS['Latitude'].map('{:.03f}'.format).astype(float)
+        dfWaveGlider['Lon'] = dfGPS['Longitude'].map('{:.03f}'.format).astype(float)
+        dfWaveGlider['Temperature'] = dfGPS['Temperature'].map('{:.03f}'.format).astype(float)
+        dfWaveGlider['Salinity'] = dfGPS['Salinity'].map('{:.03f}'.format).astype(float)
+    else:
+        dfWaveGlider = pd.DataFrame(columns=['Date','Lat','Lon','Temperature','Salinity'])
     # print(dfWaveGlider.head())
 
     # fig,ax = plt.subplots(1,1,figsize=(6,3))
@@ -649,5 +676,6 @@ def getWaveGlider(args,ID):
     # ax.plot(dfAS['DateTime'],dfAS['Salinity'],'r.')
     # ax.plot(dfGPS['GPSDateTime'],dfGPS['Salinity'],'b.')
     # ax.set_title('ACT salinity (b), interpolated to GPS (r)')
+    print('dfWaveGlider',dfWaveGlider['Date'].tail(20))
 
     return dfWaveGlider

@@ -265,8 +265,6 @@ def plotSuite(args):
                         swiftSlabel=f"{ID} No SSS data."
             else:
                 dfSwift['WaterTemp-0'] = np.nan
-                # df['WaterTemp-0'] = np.nan
-                # df['WaterTemp-0'] = np.nan
                 swiftTlabel = f"{ID}: no temperature data"
                 swiftTpts.append(ax1.scatter(dfSwift['Lon'], dfSwift['Lat'], dfSwift['WaterTemp-0'], c=dfSwift['WaterTemp-0'],  # <- dummy vars
                             cmap=cmap, norm=normsst, transform=ccrs.PlateCarree(),
@@ -283,8 +281,6 @@ def plotSuite(args):
                 swiftSptsZ.append(ax11.scatter(dfSwift['Lon'], dfSwift['Lat'], dfSwift['Salinity-0'], c=dfSwift['Salinity-0'],
                             cmap=cmap, norm=normsst, transform=ccrs.PlateCarree(),
                             edgecolor='face', label=swiftSlabel))
-                # swiftTlabel=f"SWIFT {ID} No lon/lat."
-                # swiftSlabel=f"SWIFT {ID} No lon/lat."
 
             # reorder to descending dates for writing to ouput
             # dfSwift.sort_values(by='DateObj',ascending=False,inplace=True)
@@ -357,7 +353,8 @@ def plotSuite(args):
             dfwaveGlider = pfields.getWaveGlider(args,ID)
             dfwaveGlider.reset_index(inplace=True)  # used for plotting
             print('line 327 Glider ID:',ID)
-            print(dfwaveGlider.head())
+            print(dfwaveGlider.head(20))
+            print(dfwaveGlider.tail(20))
 
             columnsWrite = ['Date','Lat','Lon','Temperature','Salinity']
 
@@ -382,10 +379,28 @@ def plotSuite(args):
                 else:
                     waveGliderSlabel=f"{IDdict[ID]} No SSS data."
             else:
-                waveGliderTlabel=f"WaveGlider {IDdict[ID]} No lon/lat."
-                waveGliderSlabel=f"WaveGlider {IDdict[ID]} No lon/lat."
+                # waveGliderSlabel=f"{IDdict[ID]} No SSS data."
+                dfwaveGlider['Temperature'] = np.nan
+                waveGliderTlabel = f"{IDdict[ID]}: no temperature data"
+                waveGliderTpts.append(ax1.scatter(dfwaveGlider['Lon'], dfwaveGlider['Lat'], dfwaveGlider['Temperature'], c=dfwaveGlider['Temperature'],  # <- dummy vars
+                            cmap=cmap, norm=normsst, transform=ccrs.PlateCarree(),
+                            edgecolor='face', label=waveGliderTlabel))
+                waveGliderTptsZ.append(ax11.scatter(dfwaveGlider['Lon'], dfwaveGlider['Lat'], dfwaveGlider['Temperature'], c=dfwaveGlider['Temperature'],
+                            cmap=cmap, norm=normsst, transform=ccrs.PlateCarree(),
+                            edgecolor='face', label=waveGliderTlabel))
+
+                dfwaveGlider['Salinity'] = np.nan
+                waveGliderSlabel = f"{ID}: no salinity data"
+                waveGliderSpts.append(ax1.scatter(dfwaveGlider['Lon'], dfwaveGlider['Lat'], dfwaveGlider['Salinity'], c=dfwaveGlider['Salinity'],  # <- dummy vars
+                            cmap=cmap, norm=normsst, transform=ccrs.PlateCarree(),
+                            edgecolor='face', label=waveGliderSlabel))
+                waveGliderSptsZ.append(ax11.scatter(dfwaveGlider['Lon'], dfwaveGlider['Lat'], dfwaveGlider['Salinity'], c=dfwaveGlider['Salinity'],
+                            cmap=cmap, norm=normsst, transform=ccrs.PlateCarree(),
+                            edgecolor='face', label=waveGliderSlabel))
 
             dfwaveGliderNew = dfwaveGlider[columnsWrite]
+            print('line 401 plotSuite')
+            print(dfwaveGliderNew.tail(20))
             # dfswiftNew.rename(columns=outHeaders,inplace=True)
             # need to made Date a string for .csv ?
             # sheetname = f'Swift{ID}'
@@ -396,7 +411,7 @@ def plotSuite(args):
             if os.path.exists(gliderFile):
                 dfwaveGliderPrev = pd.read_csv(gliderFile)
                 dfwaveGliderPrev = pd.concat([dfwaveGliderPrev,dfwaveGliderNew],axis=0,ignore_index=True)
-                dfwaveGliderPrev.drop_duplicates(inplace=True)
+                dfwaveGliderPrev.drop_duplicates(subset=['Date','Lat','Lon'],keep='first',inplace=True)  # remove rows where interp T/S is different from original
                 dfwaveGliderPrev.to_csv(gliderFile,index=False)
             else:
                 dfwaveGliderNew.to_csv(gliderFile,float_format='%.3f',index=False)

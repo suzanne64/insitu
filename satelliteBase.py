@@ -70,7 +70,7 @@ def BeaufortSatelliteMap(args,today,surface='SST',zoom=False): #strdate=None,sur
     gl.ylocator = mticker.FixedLocator(np.arange(68,82,2))
     gl.yformatter = LATITUDE_FORMATTER
 
-    ax1.add_feature(cfeature.LAND,facecolor='gray')
+    ax1.add_feature(cfeature.LAND,facecolor='tan')
     ax1.coastlines(resolution='10m',linewidth=0.5,color='lightgray')
     ax1.set_extent(extent,crs=ccrs.PlateCarree())
     ax1.yaxis.tick_left()
