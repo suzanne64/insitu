@@ -1,6 +1,6 @@
 ## Instructions for set up and how to run SASSIE insitu data code. 
 
-Main code is plotSuite.py, which collects, plots and writing out to excel files.
+Main code is plotSuite.py, which collects, plots and writes data to .csv files.
 
 Clone this repository. 
 
