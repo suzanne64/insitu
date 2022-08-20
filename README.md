@@ -41,6 +41,12 @@ In your terminal window:
 5. type :wq		(saves the file)
 6. press enter		(closes the vi window)
 
+After you get out of vi, if you get this res
+crontab: no crontab for suzanne - using an empty one
+crontab: installing new crontab
+
+When successful, the cron job will just start running
+
 To stop a cron job, remove it with crontab -r
 To view a cron job, list it with crontab -l
 
@@ -50,12 +56,12 @@ To view a cron job, list it with crontab -l
 * '*/3'	run job every third hour
 * '*'	run every day
 * '*'	run every month
-* '*'	run every day of the week
-* the path to python	(can find with ‘which python’ in terminal window)
-* the command, here, the python code and the arguments file (which follows an @)
-* 2>&1	this has something to do with debug comments, I think. 
-* | mail 	(pipe to mail), sends an email after running
-* -s “plotSuite”	let’s you put in whatever subject you want for the email
-* lastly 		your email address.
+* '*'	run every day of the week	(integers 0-7 are allowed, where 0 and 7 indicates Sundays)
+* the path to python			(can find with ‘which python’ in terminal window)
+* the command 				(the python code and the arguments file (which follows an @))
+* 2>&1					this has something to do with debug comments, I think. 
+* | mail 				(pipe to mail), sends an email after running
+* -s “plotSuite”			(text of the email subject line)
+* your email address			(will get an email everytime it runs)
 
 
